@@ -21,6 +21,7 @@ repr_type: 'block_graph'
 include_nblocks: False
 model_version: 'v4'
 save_path: 'gflownet_models/'
-proxy_path: './data/pretrained_proxy'
+proxy_path: 'data/pretrained_proxy'
+building_blocks: data/blocks_PDB_105.json
 floatX: 'float64'
 balanced_loss: True 

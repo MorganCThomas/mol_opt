@@ -10,8 +10,9 @@ from rdkit import Chem, rdBase
 from rdkit.Chem.rdchem import Mol
 rdBase.DisableLog('rdApp.error')
 
-import main.graph_ga.crossover as co, main.graph_ga.mutate as mu
-from main.optimizer import BaseOptimizer
+import crossover as co
+import mutate as mu
+from ..optimizer import BaseOptimizer
 
 
 MINIMUM = 1e-10

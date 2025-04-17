@@ -4,3 +4,4 @@ topk: 0.25
 learning_rate: 0.0005
 patience: 5
 experience_replay: True
+model_path: pretrained_model/Prior_ZINC250k_Epoch-5.ckpt

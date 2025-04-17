@@ -2,6 +2,8 @@ from configargparse import ArgumentTypeError, ArgumentParser, Namespace
 from pathlib import Path
 from typing import Optional, Union
 
+pool_data = Path(__file__).parent.parent.parent / "data" / "zinc.csv.gz"
+
 
 def gen_args(args: Optional[str] = None) -> Namespace:
     parser = ArgumentParser()
@@ -24,7 +26,8 @@ def gen_args(args: Optional[str] = None) -> Namespace:
 #       GENERAL ARGUMENTS       #
 #################################
 def add_general_args(parser: ArgumentParser) -> None:
-    parser.add_argument('method', default='molpal')
+    parser.add_argument('--method', default='molpal')
+    parser.add_argument('--molscore_config', type=str)
     parser.add_argument('--config', is_config_file=True,
                         help='the filepath of the configuration file')
     parser.add_argument('--output-dir', default="molpal_out",
@@ -85,7 +88,7 @@ def add_pool_args(parser: ArgumentParser) -> None:
     parser.add_argument('--pool', default='eager',
                         help='the type of MoleculePool to use')
     parser.add_argument('-l', '--libraries', '--library',
-                        default=['data/zinc.csv.gz'], nargs='+',
+                        default=["data/zinc.csv.gz"], nargs='+',
                         help='the CSVs containing members of the MoleculePool')
     parser.add_argument('--no-title-line', action='store_true', default=False,
                         help='whether there is no title line in the library files')

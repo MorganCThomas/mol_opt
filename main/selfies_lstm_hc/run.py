@@ -1,20 +1,19 @@
 import os, pickle, torch, random, argparse
 from functools import total_ordering
 from pathlib import Path
-import yaml
 import numpy as np 
-from tqdm import tqdm 
-from tdc import Oracle
 import sys
 path_here = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(path_here)
 sys.path.append('.')
-from main.optimizer import BaseOptimizer
-from main.utils.chem import canonicalize_list
 
-from rnn_generator import SmilesRnnMoleculeGenerator
-from rnn_utils import load_rnn_model, get_tensor_dataset, load_selfies_from_list
 from tdc.chem_utils import MolConvert
+
+from ..optimizer import BaseOptimizer
+from ..utils.chem import canonicalize_list
+from .rnn_generator import SmilesRnnMoleculeGenerator
+from .rnn_utils import load_rnn_model, get_tensor_dataset, load_selfies_from_list
+
 smiles2selfies = MolConvert(src = 'SMILES', dst = 'SELFIES')
 selfies2smiles = MolConvert(src = 'SELFIES', dst = 'SMILES')
 
@@ -56,7 +55,7 @@ class SELFIES_LSTM_HC_Optimizer(BaseOptimizer):
             # Exploration run
             starting_population = np.random.choice(self.all_smiles, config['population_size'])
 
-        pretrained_model_path = os.path.join(path_here, 'pretrained_model', 'model_final_0.698.pt')
+        pretrained_model_path = str(Path(__file__).parent / config["model_path"]) 
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model_def = Path(pretrained_model_path).with_suffix('.json')
         sample_final_model_only = False

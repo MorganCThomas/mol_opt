@@ -11,7 +11,7 @@ from typing import Dict, List, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
-from main.molpal.molpal import acquirer, featurizer, models, pools
+from . import acquirer, featurizer, models, pools
 
 T = TypeVar('T')
 

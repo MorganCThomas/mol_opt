@@ -6,7 +6,7 @@ import os
 from copy import deepcopy
 import numpy as np
 from tdc import Oracle
-from main.optimizer import BaseOptimizer
+from ..optimizer import BaseOptimizer
 
 class Exhaustive_Optimizer(BaseOptimizer):
 

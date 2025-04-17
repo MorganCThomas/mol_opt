@@ -1,5 +1,6 @@
 ## Pool arguments
 pool: lazy
+libraries: [data/zinc.csv.gz]
 ## Acquisition arguments
 metric: ucb
 beta: 2

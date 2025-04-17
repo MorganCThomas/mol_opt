@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils import Variable
+from .utils import Variable
 
 class MultiGRU(nn.Module):
     """ Implements a three layer GRU cell including an embedding layer

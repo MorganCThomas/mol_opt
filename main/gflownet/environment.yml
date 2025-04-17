@@ -1,4 +1,4 @@
-name: gflownet
+name: molscore_gflownet
 channels:
   - conda-forge
   - defaults
@@ -126,7 +126,7 @@ dependencies:
     - pytdc==0.3.5
     - python-louvain==0.15
     - pyyaml==6.0
-    - rd-filters==0.1
+    #- rd-filters==0.1
     - rdflib==6.1.1
     - requests==2.27.1
     - scikit-learn==0.21.3

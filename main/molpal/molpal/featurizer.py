@@ -16,7 +16,7 @@ try:
 except ImportError:
     pass
 
-from main.molpal.molpal.utils import batches
+from .utils import batches
 
 
 @dataclass

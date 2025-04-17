@@ -3,10 +3,11 @@ import torch
 import random
 from rdkit import Chem, RDLogger
 import sys
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 from proposal.models.editor_basic import BasicEditor
 from proposal.proposal import Proposal_Random, Proposal_Editor, Proposal_Mix
 from sampler import Sampler_SA, Sampler_MH, Sampler_Recursive
@@ -28,11 +29,19 @@ class MARS_Optimizer(BaseOptimizer):
         ### estimator
         # if config['mols_ref']: 
         #     config['mols_ref'] = load_mols(config['data_dir'], config['mols_ref'])
+        
+        # Make config paths relative
+        config["root_dir"] = str(Path(path_here) / config["root_dir"])
+        config["data_dir"] = str(Path(path_here) / config["data_dir"])
+        config["editor_dir"] = str(Path(path_here) / config["editor_dir"])
+        config["model_path"] = str(Path(path_here) / config["model_path"])
 
         ### proposal
         editor = BasicEditor(config).to(config['device']) if not config['proposal'] == 'random' else None
-        if config['editor_dir'] is not None: # load pre-trained editor
-            path = os.path.join(config['root_dir'], config['editor_dir'], 'model_best.pt')
+        #if config['editor_dir'] is not None: # load pre-trained editor
+        if config['editor_path'] is not None: # load pre-trained editor
+            #path = os.path.join(config['root_dir'], config['editor_dir'], 'model_best.pt')
+            path = str(Path(path_here) / config['editor_path'])
             editor.load_state_dict(torch.load(path, map_location=torch.device(config['device'])))
             print('successfully loaded editor model from %s' % path)
         if config['proposal'] == 'random': proposal = Proposal_Random(config)

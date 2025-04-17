@@ -1,9 +1,9 @@
 import os, torch
 import sys
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 from chemutils import * 
 from module import * 
 import inference_utils 
@@ -13,8 +13,8 @@ from chemutils import smiles2graph, vocabulary
 from online_train import train_gnn
 from random import shuffle 
 import random 
-# import multiprocessing as mp
-import multiprocess as mp
+import multiprocessing as mp
+#import multiprocess as mp
 num_cores = mp.cpu_count()
 num_cores = min(num_cores, 5)
 pool = mp.Pool(num_cores)

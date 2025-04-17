@@ -1,12 +1,6 @@
 from __future__ import print_function
 
-import argparse
-import yaml
-import os
-from copy import deepcopy
-import numpy as np
-from tdc import Oracle
-from main.optimizer import BaseOptimizer, Objdict
+from ..optimizer import BaseOptimizer, Objdict
 
 from Workflow import Workflow
 
@@ -23,5 +17,5 @@ class GraphInvent_Optimizer(BaseOptimizer):
         config = Objdict(config)
 
         workflow = Workflow(constants=config)
-        util.suppress_warnings()
+        #util.suppress_warnings()
         workflow.learning_phase()

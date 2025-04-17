@@ -2,12 +2,14 @@ import os
 import yaml
 import random
 import torch
+import sys
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import Draw
 import tdc
 from tdc.generation import MolGen
-from main.utils.chem import *
+from .utils.chem import *
+from pathlib import Path
+from moleval.utils import read_smiles
 
 
 class Objdict(dict):
@@ -47,7 +49,7 @@ def top_auc(buffer, top_n, finish, freq_log, max_oracle_calls):
     return sum / max_oracle_calls
 
 
-class Oracle:
+class MolOptOracle:
     def __init__(self, args=None, mol_buffer={}):
         self.name = None
         self.evaluator = None
@@ -194,19 +196,99 @@ class Oracle:
     @property
     def finish(self):
         return len(self.mol_buffer) >= self.max_oracle_calls
+    
+    
+class MolScoreOracle:
+    def __init__(self, args=None, mol_buffer = {}):
+        self.name = None
+        self.evaluator = None # MolScore object
+        self.task_label = None
+        if args is None:
+            self.max_oracle_calls = 10000
+        else:
+            self.args = args
+            self.max_oracle_calls = None
+        # NOTE: For simplicity and consistent let's also create a buffer, memory and compute inefficient
+        self.mol_buffer = mol_buffer # {SMILES: [score, index]}
+
+    @property
+    def budget(self):
+        return self.evaluator.budget
+
+    def assign_evaluator(self, evaluator):
+        self.evaluator = evaluator
+        self.max_oracle_calls = evaluator.budget
+
+    def sort_buffer(self):
+        """ Sort buffer in descending order """
+        # NOTE: Compute inefficient to constantly sort a growing buffer
+        self.mol_buffer = dict(sorted(self.mol_buffer.items(), key=lambda kv: kv[1][0], reverse=True))
+
+    def save_result(self, suffix=None):
+        # Results are saved with MolScore
+        return
+
+    def log_intermediate(self, *args, **kwargs):
+        # Logging is handled by MolScore
+        return
+
+    def __len__(self):
+        # NOTE: New behaviour includes invalid/duplicates in budget.
+        return self.evaluator.current_idx # len(self.mol_buffer)
+
+    def score_smi(self, smi):
+        """
+        Function to score one molecule
+
+        Argguments:
+            smi: One SMILES string represnets a moelcule.
+
+        Return:
+            score: a float represents the property of the molecule.
+        """
+        score = self.evaluator([smi], flt=True)
+        
+        # NOTE: Old behaviour didn't add invalid/duplicate SMILES to the buffer
+        # NOTE: New behaviour includes invalid/duplicates in budget.
+        if smi in self.mol_buffer:
+            pass
+        else:
+            self.mol_buffer[smi] = [score[0], len(self.mol_buffer)+1]
+            
+        # Return score
+        return self.mol_buffer[smi][0]
+    
+    def __call__(self, smiles_lst):
+        """
+        Score
+        """
+        if type(smiles_lst) == list:
+            score_list = self.evaluator(smiles_lst, flt=True)
+            # Update buffer
+            for smi, score in zip(smiles_lst, score_list):
+                if smi in self.mol_buffer:
+                    pass
+                else:
+                    self.mol_buffer[smi] = [score, len(self.mol_buffer)+1]
+        else:  ### a string of SMILES 
+            score_list = self.score_smi(smiles_lst)
+        return score_list
+
+    @property
+    def finish(self):
+        return self.evaluator.finished
 
 
-class BaseOptimizer:
+class MolOptBaseOptimizer:
 
     def __init__(self, args=None):
-        self.model_name = "Default"
+        self.model_name = None
         self.args = args
         self.n_jobs = args.n_jobs
-        # self.pool = joblib.Parallel(n_jobs=self.n_jobs)
         self.smi_file = args.smi_file
-        self.oracle = Oracle(args=self.args)
+        self.oracle = MolOptOracle(args=self.args)
         if self.smi_file is not None:
-            self.all_smiles = self.load_smiles_from_file(self.smi_file)
+            self.all_smiles = read_smiles(self.smi_file)
         else:
             data = MolGen(name = 'ZINC')
             self.all_smiles = data.get_data()['smiles'].tolist()
@@ -214,10 +296,6 @@ class BaseOptimizer:
         self.sa_scorer = tdc.Oracle(name = 'SA')
         self.diversity_evaluator = tdc.Evaluator(name = 'Diversity')
         self.filter = tdc.chem_utils.oracle.filter.MolFilter(filters = ['PAINS', 'SureChEMBL', 'Glaxo'], property_filters_flag = False)
-
-    # def load_smiles_from_file(self, file_name):
-    #     with open(file_name) as f:
-    #         return self.pool(delayed(canonicalize)(s.strip()) for s in f)
             
     def sanitize(self, mol_list):
         new_mol_list = []
@@ -242,8 +320,6 @@ class BaseOptimizer:
     def log_result(self):
 
         print(f"Logging final results...")
-
-        # import ipdb; ipdb.set_trace()
 
         log_num_oracles = [100, 500, 1000, 3000, 5000, 10000]
         assert len(self.mol_buffer) > 0 
@@ -294,7 +370,7 @@ class BaseOptimizer:
 
     def reset(self):
         del self.oracle
-        self.oracle = Oracle(args=self.args)
+        self.oracle = MolOptOracle(args=self.args)
 
     @property
     def mol_buffer(self):
@@ -350,4 +426,117 @@ class BaseOptimizer:
         for seed in seeds:
             self.optimize(oracle, config, seed, project)
             self.reset()
+            
+class MolScoreBaseOptimizer:
 
+    def __init__(self, args=None):
+        self.model_name = "Default"
+        self.args = args
+        self.n_jobs = args.n_jobs
+        self.smi_file = args.smi_file
+        self.oracle = MolScoreOracle(args=self.args)
+        if self.smi_file is not None:
+            self.all_smiles = read_smiles(self.smi_file)
+        else:
+            data = MolGen(name = 'ZINC')
+            self.all_smiles = data.get_data()['smiles'].tolist()
+            
+    def sanitize(self, mol_list):
+        new_mol_list = []
+        smiles_set = set()
+        for mol in mol_list:
+            if mol is not None:
+                try:
+                    smiles = Chem.MolToSmiles(mol)
+                    if smiles is not None and smiles not in smiles_set:
+                        smiles_set.add(smiles)
+                        new_mol_list.append(mol)
+                except ValueError:
+                    print('bad smiles')
+        return new_mol_list
+        
+    def sort_buffer(self):
+        """ Sort buffer by score  """
+        self.oracle.sort_buffer()
+    
+    def log_intermediate(self, mols=None, scores=None, finish=False):
+        # MolScore logs scores
+        return
+    
+    def log_result(self):
+        # MolScore logs result
+        return
+        
+    def save_result(self, suffix=None):
+        # MolScore saves result
+        return
+    
+    def _analyze_results(self, results):
+        # MolScore analyzes results
+        return
+
+    def reset(self):
+        del self.oracle
+        self.oracle = MolScoreOracle(args=self.args)
+
+    @property
+    def mol_buffer(self):
+        return self.oracle.mol_buffer
+
+    @property
+    def finish(self):
+        return self.oracle.finish
+        
+    def _optimize(self, oracle, config):
+        raise NotImplementedError
+            
+    def hparam_tune(self, oracles, hparam_space, hparam_default, count=5, num_runs=3, project="tune"):
+        raise NotImplementedError
+        seeds = [0, 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+        seeds = seeds[:num_runs]
+        hparam_space["name"] = hparam_space["name"]
+        
+        def _func():
+            avg_auc = 0
+            for oracle in oracles:
+                auc_top10s = []
+                for seed in seeds:
+                    np.random.seed(seed)
+                    torch.manual_seed(seed)
+                    random.seed(seed)
+                    self._optimize(oracle, config)
+                    auc_top10s.append(top_auc(self.oracle.mol_buffer, 10, True, self.oracle.freq_log, self.oracle.max_oracle_calls))
+                    self.reset()
+                avg_auc += np.mean(auc_top10s)
+            print({"avg_auc": avg_auc})
+            
+
+    def optimize(self, oracle, config, seed=0, project="test"):
+
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        random.seed(seed)
+        self.seed = seed 
+        self.oracle.task_label = self.model_name + "_" + oracle.name + "_" + str(seed)
+        self._optimize(oracle, config)
+        self.reset()
+
+
+    def production(self, oracle, config, num_runs=5, project="production"):
+        raise NotImplementedError
+        seeds = [0, 1, 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+        # seeds = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+        if num_runs > len(seeds):
+            raise ValueError(f"Current implementation only allows at most {len(seeds)} runs.")
+        seeds = seeds[:num_runs]
+        for seed in seeds:
+            self.optimize(oracle, config, seed, project)
+            self.reset()
+
+# ---- Select the base optimizer class based on the main file name ----
+main_file = Path(sys.modules['__main__'].__file__)
+if main_file.stem == "run_with_molscore":
+    BaseOptimizer = MolScoreBaseOptimizer
+else:
+    print("Importing optimizer")
+    BaseOptimizer = MolOptBaseOptimizer

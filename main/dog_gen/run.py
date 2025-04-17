@@ -1,25 +1,14 @@
 from __future__ import print_function
 
-import argparse
-import heapq
-import yaml
 import os
-import random
-from time import time
-from typing import List, Optional
+from pathlib import Path
 
-import joblib
 import numpy as np
-from joblib import delayed
-from rdkit import Chem, rdBase
-from rdkit.Chem.rdchem import Mol
-from tdc import Oracle
+from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
 
 import sys 
 path_here = os.path.dirname(os.path.realpath(__file__))
-path_dogae = '/'.join(path_here.split('/')[:-1])
-path_dogae = os.path.join(path_dogae, 'dog_ae')
 sys.path.append(path_here)
 sys.path.append(os.path.join(path_here, 'submodules/autoencoders'))
 sys.path.append(os.path.join(path_here, 'submodules/GNN'))
@@ -27,21 +16,17 @@ sys.path.append(os.path.join(path_here, 'submodules/GNN'))
 from os import path
 from time import strftime, gmtime
 import uuid
-import pickle
-import csv
 
-import torch
 from torch.utils import data
 from torch.utils.tensorboard import SummaryWriter
-from docopt import docopt
 
-from syn_dags.script_utils import train_utils
-from syn_dags.model import doggen
-from syn_dags.script_utils import doggen_utils
-from syn_dags.script_utils import opt_utils
-from syn_dags.utils import settings
+from .syn_dags.script_utils import train_utils
+from .syn_dags.model import doggen
+from .syn_dags.script_utils import doggen_utils
+from .syn_dags.script_utils import opt_utils
+from .syn_dags.utils import settings
 
-from main.optimizer import BaseOptimizer, Objdict
+from ..optimizer import BaseOptimizer, Objdict
 
 TB_LOGS_FILE = 'tb_logs'
 HC_RESULTS_FOLDER = 'hc_results'
@@ -51,8 +36,8 @@ class Params:
     def __init__(self, task_name, weight_path: str):
         self.device = settings.torch_device()
 
-        self.train_tree_path = os.path.join(path_dogae, "scripts/dataset_creation/data/uspto-train-depth_and_tree_tuples.pick")
-        self.valid_tree_path = os.path.join(path_dogae, "scripts/dataset_creation/data/uspto-valid-depth_and_tree_tuples.pick")
+        self.train_tree_path = os.path.join(path_here, "scripts/dataset_creation/data/uspto-train-depth_and_tree_tuples.pick")
+        self.valid_tree_path = os.path.join(path_here, "scripts/dataset_creation/data/uspto-valid-depth_and_tree_tuples.pick")
 
         self.weight_path = weight_path
         self.num_dataloader_workers = 4

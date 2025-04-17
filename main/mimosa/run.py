@@ -1,9 +1,10 @@
 import os, torch
 import sys
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 from chemutils import * 
 from inference_utils import * 
 from online_train import * 
@@ -19,7 +20,8 @@ class MIMOSA_Optimizer(BaseOptimizer):
 		self.oracle.assign_evaluator(oracle)
 		all_smiles_score_list = []  
 
-		model_ckpt = os.path.join(path_here, "pretrained_model/GNN.ckpt") # mGNN only
+		#model_ckpt = os.path.join(path_here, "pretrained_model/GNN.ckpt") # mGNN only
+		model_ckpt = str(Path(path_here) / config["model_path"])
 		gnn = torch.load(model_ckpt)
 
 		population_size = config['population_size']

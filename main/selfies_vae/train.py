@@ -11,7 +11,7 @@ import sys
 sys.path.append('.')
 
 
-from utils.script_utils import add_train_args, set_seed
+from selfies_vae.utils.script_utils import add_train_args, set_seed
 from models.models_storage import ModelsStorage
 from tdc.generation import MolGen
 from models.selfies_vae import VAE, VAETrainer, vae_parser

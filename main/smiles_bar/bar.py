@@ -1,8 +1,8 @@
 import torch
 import pandas as pd
 
-from model import Model
-from utils import to_tensor
+from .model import Model
+from .utils import to_tensor
 
 from copy import deepcopy
 

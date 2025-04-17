@@ -5,8 +5,8 @@ import h5py
 import ray
 from tqdm import tqdm
 
-from main.molpal.molpal.featurizer import Featurizer, feature_matrix
-from main.molpal.molpal.utils import batches
+from ..featurizer import Featurizer, feature_matrix
+from ..utils import batches
 
 T = TypeVar("T")
 

@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.nn_utils import create_var, index_select_ND
-from utils.chem_utils import get_mol
+from ...utils.nn_utils import create_var, index_select_ND
+from ...utils.chem_utils import get_mol
 import rdkit.Chem as Chem
 
 ELEM_LIST = ['C', 'N', 'O', 'S', 'F', 'Si', 'P', 'Cl', 'Br', 'Mg', 'Na', 'Ca', 'Fe', 'Al', 'I', 'B', 'K', 'Se', 'Zn', 'H', 'Cu', 'Mn', 'unknown']

@@ -10,9 +10,9 @@ import numpy as np
 import torch
 from tqdm import tqdm 
 
-from function_utils import CachedFunction, CachedBatchFunction
-from gp import TanimotoGP, batch_predict_mu_var_numpy
-from graph_ga.graph_ga import run_ga_maximization
+from ..function_utils import CachedFunction, CachedBatchFunction
+from ..gp import TanimotoGP, batch_predict_mu_var_numpy
+from ..graph_ga.graph_ga import run_ga_maximization
 
 
 # Logger with standard handler

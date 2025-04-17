@@ -14,7 +14,7 @@ rdBase.DisableLog('rdApp.error')
 from tdc import Oracle
 
 import cfg_util, smiles_grammar 
-from main.optimizer import BaseOptimizer
+from ..optimizer import BaseOptimizer
 
 GCFG = smiles_grammar.GCFG
 

@@ -4,7 +4,7 @@ import os
 from guacamol.assess_goal_directed_generation import assess_goal_directed_generation
 from guacamol.utils.helpers import setup_default_logger
 
-from smiles_rnn_directed_generator import SmilesRnnDirectedGenerator
+from .smiles_rnn_directed_generator import SmilesRnnDirectedGenerator
 
 if __name__ == '__main__':
     setup_default_logger()

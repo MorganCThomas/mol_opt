@@ -2,8 +2,8 @@ import torch
 import pandas as pd
 import numpy as np
 
-from model import Model
-from utils import get_randomized_smiles, to_tensor
+from .model import Model
+from .utils import get_randomized_smiles, to_tensor
 
 
 class AugmentedMemory:

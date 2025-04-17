@@ -2,8 +2,8 @@ from typing import List
 
 from guacamol.distribution_matching_generator import DistributionMatchingGenerator
 
-from rnn_model import SmilesRnn
-from rnn_sampler import SmilesRnnSampler
+from .rnn_model import SmilesRnn
+from .rnn_sampler import SmilesRnnSampler
 
 
 class SmilesRnnGenerator(DistributionMatchingGenerator):

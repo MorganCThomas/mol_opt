@@ -10,10 +10,10 @@ from tqdm import tqdm
 from guacamol.scoring_function import ScoringFunction
 from guacamol.utils.chemistry import canonicalize_list
 
-from rnn_model import SmilesRnn
-from rnn_sampler import SmilesRnnSampler
-from rnn_trainer import SmilesRnnTrainer
-from rnn_utils import get_tensor_dataset, load_selfies_from_list
+from .rnn_model import SmilesRnn
+from .rnn_sampler import SmilesRnnSampler
+from .rnn_trainer import SmilesRnnTrainer
+from .rnn_utils import get_tensor_dataset, load_selfies_from_list
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

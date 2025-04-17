@@ -1,8 +1,8 @@
 import torch
 
-from action_sampler import ActionSampler
-from rnn_model import SmilesRnn
-from smiles_char_dict import SmilesCharDictionary
+from .action_sampler import ActionSampler
+from .rnn_model import SmilesRnn
+from .smiles_char_dict import SmilesCharDictionary
 
 
 class SmilesRnnSampler:

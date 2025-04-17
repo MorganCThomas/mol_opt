@@ -30,9 +30,9 @@ from docopt import docopt
 
 import os, sys 
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append(os.path.join(path_here, 'submodules/autoencoders'))
-sys.path.append(os.path.join(path_here, 'submodules/GNN'))
+sys.path.insert(0, path_here)
+sys.path.insert(1, os.path.join(path_here, 'submodules/autoencoders'))
+sys.path.insert(1, os.path.join(path_here, 'submodules/GNN'))
 
 from syn_dags.script_utils import train_utils
 from syn_dags.model import doggen
@@ -61,7 +61,7 @@ from gpytorch.mlls import ExactMarginalLogLikelihood
 from botorch.acquisition import UpperConfidenceBound
 from botorch.optim import optimize_acqf
 
-from main.optimizer import BaseOptimizer, Objdict
+from ..optimizer import BaseOptimizer, Objdict
 
 TB_LOGS_FILE = 'tb_logs'
 HC_RESULTS_FOLDER = 'hc_results'

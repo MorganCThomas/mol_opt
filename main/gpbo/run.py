@@ -7,17 +7,17 @@ import gpytorch
 from rdkit.Chem import rdMolDescriptors
 import sys
 sys.path.append('.')
-from main.optimizer import BaseOptimizer
+from ..optimizer import BaseOptimizer
 
-from gp import (
+from .gp import (
     TanimotoGP,
     batch_predict_mu_var_numpy,
     fit_gp_hyperparameters,
 )
-from fingerprints import smiles_to_fp_array
-from bo import acquisition_funcs, gp_bo
-from function_utils import CachedBatchFunction
-from graph_ga.graph_ga import run_ga_maximization
+from .fingerprints import smiles_to_fp_array
+from .bo import acquisition_funcs, gp_bo
+from .function_utils import CachedBatchFunction
+from .graph_ga.graph_ga import run_ga_maximization
 
 
 def get_trained_gp(X_train, y_train,):

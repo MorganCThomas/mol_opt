@@ -127,7 +127,6 @@ class Model:
         :param file_path: input file path
         :return: new instance of the RNN or an exception if it was not possible to load it.
         """
-
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         save_dict = torch.load(file_path, map_location=device)
 

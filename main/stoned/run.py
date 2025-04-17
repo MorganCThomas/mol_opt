@@ -3,11 +3,10 @@ import sys
 path_here = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(path_here)
 sys.path.append('.')
-from main.optimizer import BaseOptimizer
+from ..optimizer import BaseOptimizer
 
 import selfies
 import numpy as np 
-import random
 from rdkit.Chem import MolFromSmiles as smi2mol
 from rdkit.Chem import MolToSmiles as mol2smi
 from rdkit.Chem import AllChem

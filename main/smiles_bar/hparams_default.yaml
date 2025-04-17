@@ -3,3 +3,4 @@ sigma: 1000
 alpha: 0.25
 learning_rate: 0.0005
 patience: 5
+model_path: prior/zinc.prior.ckpt

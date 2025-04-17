@@ -1,6 +1,8 @@
 # from models.smiles_vae import VAE, VAETrainer, vae_parser
 # from models.jtvae import JTVAE, JTVAETrainer, jtvae_parser
-from models.selfies_vae import VAE, VAETrainer, vae_parser
+from models.selfies_vae.model import VAE #, VAETrainer, vae_parser
+from models.selfies_vae.trainer import VAETrainer
+from models.selfies_vae.config import get_parser as vae_parser
 
 
 class ModelsStorage():

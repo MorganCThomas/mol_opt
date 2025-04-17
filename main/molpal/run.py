@@ -8,17 +8,14 @@ python -c "import tempfile; print(tempfile.gettempdir())"
 """
 from __future__ import print_function
 
-import argparse
-import yaml
 import os
-from tdc import Oracle
 import ray 
 import signal
 import sys
 
-from main.optimizer import BaseOptimizer
-from main.molpal.molpal import args as molpal_args
-from main.molpal.molpal import Explorer
+from ..optimizer import BaseOptimizer
+from .molpal import args as molpal_args
+from .molpal import Explorer
 
 def sigterm_handler(signum, frame):
     sys.exit(0)
@@ -63,7 +60,7 @@ class MolPAL_Optimizer(BaseOptimizer):
             print('Failed to create a temporary directory for ray')
             raise
 
-        # import ipdb; ipdb.set_trace()
+        # import pdb; pdb.set_trace()
         
         path = params.pop("output_dir")
         explorer = Explorer(oracle=self.oracle, path=path, **params)

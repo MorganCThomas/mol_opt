@@ -1,10 +1,11 @@
 import os
 import numpy as np 
 import sys
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 
 import tensorflow as tf
 
@@ -31,7 +32,7 @@ class MolGAN_Optimizer(BaseOptimizer):
         
 
         data = SparseMolecularDataset()
-        data.load(os.path.join(path_here, 'data/gdb9_9nodes.sparsedataset'))
+        data.load(str(Path(path_here) / config['training_data']))
         steps = (len(data) // config['batch_dim'])
         n_samples = config['n_samples']
         la = 1

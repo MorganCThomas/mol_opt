@@ -1,11 +1,12 @@
 import os
 import torch
+from pathlib import Path
 
-from main.optimizer import BaseOptimizer
-from main.utils.chem import canonicalize_list
+from ..optimizer import BaseOptimizer
+from ..utils.chem import canonicalize_list
 
-from model.utils import set_default_device_cuda, to_tensor
-from model.RL import AugmentedHillClimb
+from .model.utils import set_default_device_cuda, to_tensor
+from .model.RL import AugmentedHillClimb
 
 
 class AHC_Optimizer(BaseOptimizer):
@@ -29,8 +30,8 @@ class AHC_Optimizer(BaseOptimizer):
         # Initalization
         AHC = AugmentedHillClimb(
             device=device,
-            agent=os.path.join(os.path.dirname(__file__), 'pretrained_model/Prior_ZINC250k_Epoch-5.ckpt'),
-            scoring_function=self.oracle, save_dir=self.args.output_dir,
+            agent=str(Path(__file__).parent / config["model_path"]),
+            scoring_function=self.oracle, save_dir="/dev/null/",
             optimizer=torch.optim.Adam,
             learning_rate=config['learning_rate'],
             is_molscore=False,

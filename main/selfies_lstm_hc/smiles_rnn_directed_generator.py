@@ -8,8 +8,8 @@ from guacamol.goal_directed_generator import GoalDirectedGenerator
 from guacamol.utils.chemistry import canonicalize_list, canonicalize
 from joblib import delayed
 
-from rnn_generator import SmilesRnnMoleculeGenerator
-from rnn_utils import load_rnn_model
+from .rnn_generator import SmilesRnnMoleculeGenerator
+from .rnn_utils import load_rnn_model
 
 
 class SmilesRnnDirectedGenerator(GoalDirectedGenerator):

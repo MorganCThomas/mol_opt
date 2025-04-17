@@ -9,8 +9,8 @@ import torch
 from guacamol.utils.data import remove_duplicates
 from torch.utils.data import TensorDataset
 
-from rnn_model import SmilesRnn
-from selfies_char_dict import SelfiesCharDictionary
+from .rnn_model import SmilesRnn
+from .selfies_char_dict import SelfiesCharDictionary
 
 
 from tdc.chem_utils import MolConvert

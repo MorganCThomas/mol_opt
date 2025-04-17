@@ -5,3 +5,4 @@ pretrain_n_epochs: 0
 mols_to_sample: 1024
 keep_top: 512
 max_len: 100 
+model_path: pretrained_model/model_final_0.473.pt

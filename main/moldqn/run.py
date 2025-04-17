@@ -1,10 +1,11 @@
 import os, torch
 import numpy as np 
 import sys
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 from agents.agent import DQN 
 
 class MolDQN_Optimizer(BaseOptimizer):
@@ -20,7 +21,7 @@ class MolDQN_Optimizer(BaseOptimizer):
         agent = DQN(
             oracle=self.oracle,
             q_fn = 'mlp', 
-            n_max_oracle_call=self.args.max_oracle_calls,
+            n_max_oracle_call=self.oracle.max_oracle_calls,
             args=config,
         )
 

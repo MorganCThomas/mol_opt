@@ -11,10 +11,9 @@ import numpy as np
 from rdkit import Chem, rdBase
 from rdkit.Chem import AllChem
 rdBase.DisableLog('rdApp.error')
-from tdc import Oracle
 
-from stats import Stats, get_stats_from_pickle
-from main.optimizer import BaseOptimizer
+from .stats import Stats, get_stats_from_pickle
+from ..optimizer import BaseOptimizer
 
 
 def run_rxn(rxn_smarts, mol):
@@ -255,7 +254,7 @@ class Graph_MCTS_Optimizer(BaseOptimizer):
         self.oracle.assign_evaluator(oracle)
 
         init_mol = Chem.MolFromSmiles(config["init_smiles"])
-        stats = get_stats_from_pickle(self.args.pickle_directory)
+        stats = get_stats_from_pickle(config["pickle_directory"])
 
         # evolution: go go go!!
         while True:

@@ -10,18 +10,19 @@ import time
 import warnings
 warnings.filterwarnings('ignore')
 import numpy as np
-import torch
 from copy import deepcopy
+import os, sys
+from pathlib import Path
+path_here = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, path_here)
 
 from mol_mdp_ext import MolMDPExtended, BlockMoleculeDataExtended
 import model_atom, model_block, model_fingerprint
-import os, sys 
-path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
+
 from rdkit import rdBase
 rdBase.DisableLog('rdApp.error')
 
-from main.optimizer import BaseOptimizer, Objdict
+from ..optimizer import BaseOptimizer, Objdict
 
 _stop = [None]
 
@@ -292,8 +293,12 @@ class GFlowNet_Optimizer(BaseOptimizer):
 
         self.oracle.assign_evaluator(oracle)
         config = Objdict(config)
+        
+        # Update to relative paths
+        config["save_path"] = str(Path(path_here) / config["save_path"])
+        config["proxy_path"] = str(Path(path_here) / config["proxy_path"])
 
-        bpath = os.path.join(path_here, 'data/blocks_PDB_105.json')
+        bpath = str(Path(path_here) / config["building_blocks"]) #, 'data/blocks_PDB_105.json')
         device = torch.device('cuda')
         do_save = False
 

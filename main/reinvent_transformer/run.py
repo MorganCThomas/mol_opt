@@ -1,13 +1,14 @@
 import os
 import sys
 import numpy as np
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('/'.join(path_here.rstrip('/').split('/')[:-2]))
-from main.optimizer import BaseOptimizer
-from utils import Variable, seq_to_smiles, unique
-from model import RNN
-from data_structs import Vocabulary, Experience
+sys.path.insert(0, path_here)
+#sys.path.append('/'.join(path_here.rstrip('/').split('/')[:-2]))
+from ..optimizer import BaseOptimizer
+from .utils import Variable, seq_to_smiles, unique
+from .model import RNN
+from .data_structs import Vocabulary, Experience
 import torch
 
 
@@ -21,10 +22,9 @@ class REINVENT_Optimizer(BaseOptimizer):
 
         self.oracle.assign_evaluator(oracle)
 
-        path_here = os.path.dirname(os.path.realpath(__file__))
-        restore_prior_from=os.path.join(path_here, 'data/Prior.ckpt')
+        restore_prior_from=str(Path(path_here) / config["model_path"]) # os.path.join(path_here, 'data/Prior.ckpt')
         restore_agent_from=restore_prior_from 
-        voc = Vocabulary(init_from_file=os.path.join(path_here, "data/Voc"))
+        voc = Vocabulary(init_from_file=str(Path(path_here) / config["model_path"])) #  os.path.join(path_here, "data/Voc"))
 
         Prior = RNN(voc)
         Agent = RNN(voc)
@@ -33,10 +33,10 @@ class REINVENT_Optimizer(BaseOptimizer):
         # Saved models are partially on the GPU, but if we dont have cuda enabled we can remap these
         # to the CPU.
         if torch.cuda.is_available():
-            Prior.rnn.load_state_dict(torch.load(os.path.join(path_here,'data/Prior.ckpt')))
+            Prior.rnn.load_state_dict(torch.load(restore_prior_from))
             Agent.rnn.load_state_dict(torch.load(restore_agent_from))
         else:
-            Prior.rnn.load_state_dict(torch.load(os.path.join(path_here, 'data/Prior.ckpt'), map_location=lambda storage, loc: storage))
+            Prior.rnn.load_state_dict(torch.load(restore_prior_from, map_location=lambda storage, loc: storage))
             Agent.rnn.load_state_dict(torch.load(restore_agent_from, map_location=lambda storage, loc: storage))
 
         # We dont need gradients with respect to Prior

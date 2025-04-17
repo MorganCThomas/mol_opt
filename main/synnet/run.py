@@ -12,15 +12,15 @@ import sys
 path_here = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(path_here)
 sys.path.append('.')
-from main.optimizer import BaseOptimizer, Objdict
+from ..optimizer import BaseOptimizer, Objdict
 
-from syn_net.utils.ga_utils import crossover, mutation
+from .syn_net.utils.ga_utils import crossover, mutation
 import multiprocessing as mp
 import numpy as np
 import pandas as pd
 import time
-import scripts._mp_decode as decode
-from syn_net.utils.predict_utils import mol_fp
+from .scripts import _mp_decode as decode
+from .syn_net.utils.predict_utils import mol_fp
 from tqdm import tqdm 
 
 

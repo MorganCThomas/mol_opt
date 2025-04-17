@@ -1,9 +1,10 @@
 import os, torch
 import sys
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 
 from tdc.chem_utils.oracle.oracle import smiles_to_rdkit_mol
 import rdkit
@@ -31,14 +32,14 @@ class JTVAE_BO_Optimizer(BaseOptimizer):
 
         ## 0. load vae model 
         print('Loading traiend model ...')
-        vocab = [x.strip("\r\n ") for x in open(config['vocab_path'])] 
+        vocab = [x.strip("\r\n ") for x in open(str(Path(path_here) / config['vocab_path']))] 
         vocab = Vocab(vocab)
         hidden_size = int(config['hidden_size'])
         latent_size = int(config['latent_size'])
         depthT = int(config['depthT'])
         depthG = int(config['depthG'])
         model = JTNNVAE(vocab, hidden_size, latent_size, depthT, depthG)
-        model.load_state_dict(torch.load(config['model_path']))
+        model.load_state_dict(torch.load(str(Path(path_here) / config['model_path'])))
         vae_model = model.cuda()
         print('Finish loading!')
 

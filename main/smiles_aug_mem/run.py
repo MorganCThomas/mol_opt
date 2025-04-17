@@ -1,11 +1,11 @@
 import torch
 import numpy as np
-import os
+from pathlib import Path
 
-from main.optimizer import BaseOptimizer
+from ..optimizer import BaseOptimizer
 
-from augmented_memory import AugmentedMemory
-from utils import get_randomized_smiles, to_tensor
+from .augmented_memory import AugmentedMemory
+from .utils import get_randomized_smiles, to_tensor
 
 
 class AugmentedMemory_Optimizer(BaseOptimizer):
@@ -25,7 +25,7 @@ class AugmentedMemory_Optimizer(BaseOptimizer):
 
         print('----- Initializing SMILES Augmented Memory Model -----')
 
-        model = AugmentedMemory(pretrained_model_path=os.path.join(os.path.dirname(__file__), 'prior/zinc.prior.ckpt'),
+        model = AugmentedMemory(pretrained_model_path=str(Path(__file__).parent / config['model_path']),
                                 batch_size=64,
                                 sigma=500,
                                 replay_buffer_size=100,

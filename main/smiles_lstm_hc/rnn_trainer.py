@@ -9,7 +9,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
-from rnn_utils import save_model, time_since
+from .rnn_utils import save_model, time_since
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

@@ -7,12 +7,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm 
-from main.utils.chem import canonicalize_list
 
-from rnn_model import SmilesRnn
-from rnn_sampler import SmilesRnnSampler
-from rnn_trainer import SmilesRnnTrainer
-from rnn_utils import get_tensor_dataset, load_smiles_from_list
+from .rnn_model import SmilesRnn
+from .rnn_sampler import SmilesRnnSampler
+from .rnn_trainer import SmilesRnnTrainer
+from .rnn_utils import get_tensor_dataset, load_smiles_from_list
+from ..utils.chem import canonicalize_list
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

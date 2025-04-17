@@ -8,11 +8,11 @@ import os, torch, random
 import numpy as np 
 import sys
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append('.')
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here)
+#sys.path.append('.')
+from ..optimizer import BaseOptimizer
 import selfies as sf 
-sys.path.append('datasets')
+sys.path.insert(1, 'datasets')
 import time
 
 from utilities import data_loader

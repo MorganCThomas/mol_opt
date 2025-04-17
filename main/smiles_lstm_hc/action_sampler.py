@@ -4,8 +4,8 @@ import torch
 import torch.nn.functional as F
 from torch.distributions import Categorical, Distribution
 
-from rnn_model import SmilesRnn
-from rnn_utils import rnn_start_token_vector
+from .rnn_model import SmilesRnn
+from .rnn_utils import rnn_start_token_vector
 
 
 class ActionSampler:

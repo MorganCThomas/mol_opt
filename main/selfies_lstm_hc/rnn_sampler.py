@@ -1,8 +1,8 @@
 import torch
 
-from action_sampler import ActionSampler
-from rnn_model import SmilesRnn
-from selfies_char_dict import SelfiesCharDictionary
+from .action_sampler import ActionSampler
+from .rnn_model import SmilesRnn
+from .selfies_char_dict import SelfiesCharDictionary
 from tdc.chem_utils import MolConvert
 converter = MolConvert(src = 'SMILES', dst = 'SELFIES')
 # converter = MolConvert(src = 'SELFIES', dst = 'SMILES')

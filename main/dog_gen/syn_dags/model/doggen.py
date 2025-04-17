@@ -6,8 +6,6 @@ from ..utils import settings
 from . import reaction_predictors
 from . import molecular_graph_embedder
 from . import dog_decoder
-from graph_neural_networks.sparse_pattern import ggnn_sparse
-from graph_neural_networks.ggnn_general import ggnn_base
 
 
 class DogGen(nn.Module):

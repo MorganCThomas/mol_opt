@@ -1,19 +1,16 @@
-import os, pickle, torch, random, argparse
+import os, torch
 from functools import total_ordering
 from pathlib import Path
-import yaml
 import numpy as np 
-from tqdm import tqdm 
-from tdc import Oracle
 import sys
 path_here = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(path_here)
 sys.path.append('.')
-from main.optimizer import BaseOptimizer
-from main.utils.chem import canonicalize_list
+from ..optimizer import BaseOptimizer
+from ..utils.chem import canonicalize_list
 
-from rnn_generator import SmilesRnnMoleculeGenerator
-from rnn_utils import load_rnn_model, get_tensor_dataset, load_smiles_from_list
+from .rnn_generator import SmilesRnnMoleculeGenerator
+from .rnn_utils import load_rnn_model, get_tensor_dataset, load_smiles_from_list
 
 
 @total_ordering
@@ -46,7 +43,7 @@ class SMILES_LSTM_HC_Optimizer(BaseOptimizer):
             # Exploration run
             starting_population = np.random.choice(self.all_smiles, config['population_size'])
 
-        pretrained_model_path = os.path.join(path_here, 'pretrained_model', 'model_final_0.473.pt')
+        pretrained_model_path = str(Path(__file__).parent / config["model_path"])
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model_def = Path(pretrained_model_path).with_suffix('.json')
         sample_final_model_only = False

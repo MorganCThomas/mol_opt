@@ -1,11 +1,12 @@
 import torch
 import numpy as np
 import os
+from pathlib import Path
 
-from main.optimizer import BaseOptimizer
+from ..optimizer import BaseOptimizer
 
-from bar import BAR
-from utils import to_tensor
+from .bar import BAR
+from .utils import to_tensor
 
 from copy import deepcopy
 
@@ -31,7 +32,7 @@ class BAR_Optimizer(BaseOptimizer):
 
         print('----- Initializing SMILES Best Agent Reminder (BAR) Model -----')
 
-        model = BAR(pretrained_model_path=os.path.join(os.path.dirname(__file__), 'prior/zinc.prior.ckpt'),
+        model = BAR(pretrained_model_path=str(Path(__file__).parent / config['model_path']),
                     batch_size=64,
                     sigma=1000,
                     alpha=0.25,

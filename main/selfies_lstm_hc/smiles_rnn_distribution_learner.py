@@ -4,10 +4,10 @@ from typing import List
 import torch
 from guacamol.distribution_matching_generator import DistributionMatchingGenerator
 
-from rnn_model import SmilesRnn
-from rnn_trainer import SmilesRnnTrainer
-from rnn_utils import get_tensor_dataset, load_smiles_from_list, set_random_seed
-from selfies_char_dict import SelfiesCharDictionary
+from .rnn_model import SmilesRnn
+from .rnn_trainer import SmilesRnnTrainer
+from .rnn_utils import get_tensor_dataset, load_smiles_from_list, set_random_seed
+from .selfies_char_dict import SelfiesCharDictionary
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())

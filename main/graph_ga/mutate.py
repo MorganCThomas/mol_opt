@@ -4,7 +4,7 @@ import numpy as np
 from rdkit import Chem, rdBase
 from rdkit.Chem import AllChem
 
-import main.graph_ga.crossover as co 
+import crossover as co 
 
 rdBase.DisableLog('rdApp.error')
 

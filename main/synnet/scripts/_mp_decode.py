@@ -4,20 +4,21 @@ This file contains a function to decode a single synthetic tree
 import pandas as pd
 import numpy as np
 import rdkit
-from tqdm import tqdm
 import torch
+import sys
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
+from pathlib import Path
 
-from main.synnet.syn_net.utils.data_utils import Reaction, ReactionSet, SyntheticTree, SyntheticTreeSet
+from ..syn_net.utils.data_utils import Reaction, ReactionSet, SyntheticTree, SyntheticTreeSet
 from sklearn.neighbors import BallTree
 
-from tdc.chem_utils import MolConvert
-from main.synnet.syn_net.models.mlp import MLP
+from ..syn_net.models.mlp import MLP
 import os
+
 path_here = os.path.dirname(os.path.realpath(__file__))
-path_main = '/'.join(path_here.split('/')[:-1])
+path_main = str(Path(__file__).parent)
 
 nbits = 4096
 out_dim = 256

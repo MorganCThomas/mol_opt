@@ -5,9 +5,9 @@ from datetime import timedelta
 
 import numpy as np
 import torch
-
-from main.utils.chem import remove_duplicates
 from torch.utils.data import TensorDataset
+
+from ..utils.chem import remove_duplicates
 
 from rnn_model import SmilesRnn
 from smiles_char_dict import SmilesCharDictionary

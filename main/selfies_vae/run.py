@@ -1,9 +1,8 @@
 import os, torch
 import sys
+from pathlib import Path
 path_here = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(path_here)
-sys.path.append(".")
-from main.optimizer import BaseOptimizer
+sys.path.insert(0, path_here) # MAKE sure to seach here first
 
 from botorch.models import SingleTaskGP
 from botorch.fit import fit_gpytorch_model
@@ -13,6 +12,9 @@ from botorch.optim import optimize_acqf
 from random import shuffle, choice  
 from tdc.chem_utils import MolConvert
 from tdc.chem_utils.oracle.oracle import smiles_to_rdkit_mol
+
+from ..optimizer import BaseOptimizer
+
 converter = MolConvert(src = 'SMILES', dst = 'SELFIES')
 inverter = MolConvert(src='SELFIES', dst = 'SMILES')
 
@@ -28,7 +30,7 @@ class SELFIES_VAEBO_Optimizer(BaseOptimizer):
 		self.oracle.assign_evaluator(oracle)
 
 		## 0. load vae model & get training data
-		vae_model = torch.load(config['save_model'])
+		vae_model = torch.load(str(Path(__file__).parent / config['model_path']))
 		smiles_lst = self.all_smiles
 		shuffle(smiles_lst)
 		train_smiles_lst = smiles_lst[:config['train_num']]
