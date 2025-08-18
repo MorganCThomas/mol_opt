@@ -1,9 +1,9 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from models.jtvae.mol_tree import MolTree
-from models.jtvae.jtnn_enc import JTNNEncoder
-from models.jtvae.mpn import MPN
-from models.jtvae.jtmpn import JTMPN
+from ..models.jtvae.mol_tree import MolTree
+from ..models.jtvae.jtnn_enc import JTNNEncoder
+from ..models.jtvae.mpn import MPN
+from ..models.jtvae.jtmpn import JTMPN
 import pickle
 import os, random
 import numpy as np

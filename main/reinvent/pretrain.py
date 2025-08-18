@@ -1,11 +1,14 @@
 #!/usr/bin/env python
-
+import os
+import sys
 import torch
 from torch.utils.data import DataLoader
 from rdkit import Chem
 from rdkit import rdBase
 from tqdm import tqdm
 
+path_here = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, path_here)
 from data_structs import MolData, Vocabulary
 from model import RNN
 from utils import decrease_learning_rate
@@ -15,11 +18,11 @@ def pretrain(restore_from=None):
     """Trains the Prior RNN"""
 
     # Read vocabulary from a file
-    voc = Vocabulary(init_from_file="data/Voc")
+    voc = Vocabulary(init_from_file="data/GuacaMol_Voc")
 
 
     print('# Create a Dataset from a SMILES file')
-    moldata = MolData("data/mols_filtered.smi", voc)
+    moldata = MolData(sys.argv[1], voc)
     data = DataLoader(moldata, batch_size=128, shuffle=True, drop_last=True,
                       collate_fn=MolData.collate_fn)
     print('build DataLoader')
@@ -66,10 +69,10 @@ def pretrain(restore_from=None):
                         tqdm.write(smile)
                 tqdm.write("\n{:>4.1f}% valid SMILES".format(100 * valid / len(seqs)))
                 tqdm.write("*" * 50 + "\n")
-                torch.save(Prior.rnn.state_dict(), "data/Prior.ckpt")
+                torch.save(Prior.rnn.state_dict(), "data/GuacaMol.ckpt")
 
         # Save the Prior
-        torch.save(Prior.rnn.state_dict(), "data/Prior.ckpt")
+        torch.save(Prior.rnn.state_dict(), "data/GuacaMol.ckpt")
 
 if __name__ == "__main__":
     pretrain()

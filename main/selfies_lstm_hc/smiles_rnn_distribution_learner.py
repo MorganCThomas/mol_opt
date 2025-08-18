@@ -6,7 +6,7 @@ from guacamol.distribution_matching_generator import DistributionMatchingGenerat
 
 from .rnn_model import SmilesRnn
 from .rnn_trainer import SmilesRnnTrainer
-from .rnn_utils import get_tensor_dataset, load_smiles_from_list, set_random_seed
+from .rnn_utils import get_tensor_dataset, load_selfies_from_list, set_random_seed
 from .selfies_char_dict import SelfiesCharDictionary
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class SmilesRnnDistributionLearner:
         self.print_every = 10
         self.seed = 42
 
-    def train(self, training_set: List[str], validation_set: List[str]) -> DistributionMatchingGenerator:
+    def train(self, train_seqs: List[str], valid_seqs: List[str]) -> DistributionMatchingGenerator:
         # GPU if available
         cuda_available = torch.cuda.is_available()
         device_str = 'cuda' if cuda_available else 'cpu'
@@ -38,8 +38,8 @@ class SmilesRnnDistributionLearner:
         set_random_seed(self.seed, device)
 
         # load data
-        train_seqs, _ = load_smiles_from_list(training_set, self.max_len)
-        valid_seqs, _ = load_smiles_from_list(validation_set, self.max_len)
+        #train_seqs, _ = load_selfies_from_list(training_set, self.max_len)
+        #valid_seqs, _ = load_selfies_from_list(validation_set, self.max_len)
 
         train_set = get_tensor_dataset(train_seqs)
         test_set = get_tensor_dataset(valid_seqs)

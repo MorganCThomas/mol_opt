@@ -6,18 +6,17 @@ from chemutils import smiles2graph
 
 # def sigmoid(x):
 #     return 1/(1+np.exp(-x))
-# device = 'cuda' if torch.cuda.is_available() else 'cpu'
-device = 'cpu'
+#device = 'cuda' if torch.cuda.is_available() else 'cpu'
+#device = 'cpu'
 sigmoid = torch.nn.Sigmoid() 
 
 class GCN(nn.Module):
-    def __init__(self, nfeat, nhid, num_layer):
+    def __init__(self, nfeat, nhid, num_layer, vocabulary_size, device='cpu'):
         super(GCN, self).__init__()
         self.gc1 = GraphConvolution(in_features = nfeat, out_features = nhid)
-        self.gcs = [GraphConvolution(in_features = nhid, out_features = nhid) for i in range(num_layer)]
+        self.gcs = [GraphConvolution(in_features = nhid, out_features = nhid).to(device) for i in range(num_layer)]
         # self.dropout = dropout
-        from chemutils import vocabulary 
-        self.vocabulary_size = len(vocabulary) 
+        self.vocabulary_size = vocabulary_size
         self.out_fc = nn.Linear(nhid, self.vocabulary_size)
         self.nfeat = nfeat 
         self.nhid = nhid 
@@ -55,10 +54,10 @@ class GCN(nn.Module):
 
     def smiles2embed(self, smiles):
         idx_lst, node_mat, substructure_lst, atomidx_2substridx, adj, leaf_extend_idx_pair = smiles2graph(smiles)
-        idx_vec = torch.LongTensor(idx_lst).to(device)
-        node_mat = torch.FloatTensor(node_mat).to(device)
-        adj = torch.FloatTensor(adj).to(device)
-        weight = torch.ones_like(idx_vec).to(device)
+        idx_vec = torch.LongTensor(idx_lst).to(self.device)
+        node_mat = torch.FloatTensor(node_mat).to(self.device)
+        adj = torch.FloatTensor(adj).to(self.device)
+        weight = torch.ones_like(idx_vec).to(self.device)
         
         ### forward 
         node_mat, adj, weight = node_mat.to(self.device), adj.to(self.device), weight.to(self.device)
@@ -71,10 +70,10 @@ class GCN(nn.Module):
 
     def smiles2pred(self, smiles):
         idx_lst, node_mat, substructure_lst, atomidx_2substridx, adj, leaf_extend_idx_pair = smiles2graph(smiles)
-        idx_vec = torch.LongTensor(idx_lst).to(device)
-        node_mat = torch.FloatTensor(node_mat).to(device)
-        adj = torch.FloatTensor(adj).to(device)
-        weight = torch.ones_like(idx_vec).to(device)
+        idx_vec = torch.LongTensor(idx_lst).to(self.device)
+        node_mat = torch.FloatTensor(node_mat).to(self.device)
+        adj = torch.FloatTensor(adj).to(self.device)
+        weight = torch.ones_like(idx_vec).to(self.device)
         logits = self.forward(node_mat, adj, weight)
         pred = torch.sigmoid(logits) 
         return pred.item() 
@@ -87,13 +86,13 @@ class GCN(nn.Module):
         self.opt.zero_grad() 
         cost.backward() 
         self.opt.step() 
-        return cost.data.numpy(), pred_y.data.numpy() 
+        return cost.cpu().data.numpy(), pred_y.cpu().data.numpy() 
 
     def infer(self, node_mat, adj, idx, target):
         pred_y = self.forward(node_mat, adj, idx)
         pred_y = pred_y.view(1,-1)
         cost = self.criteria(pred_y, target)
-        return cost.data.numpy(), pred_y.data.numpy() 
+        return cost.cpu().data.numpy(), pred_y.cpu().data.numpy() 
 
 
 if __name__ == "__main__":

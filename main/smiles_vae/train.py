@@ -14,8 +14,8 @@ sys.path.append('.')
 ######### hyperparameter  ############
 ###### see "models/smiles_vae/config.py" for the hyperparameter of vae model 
 ######### hyperparameter  ############
-from utils.script_utils import add_train_args, set_seed
-from models.models_storage import ModelsStorage
+from .utils.script_utils import add_train_args, set_seed, read_smiles
+from .models.models_storage import ModelsStorage
 from tdc.generation import MolGen
 
 lg = rdkit.RDLogger.logger()
@@ -61,6 +61,11 @@ def main(model, config):
     if config.processed_data:
         train_data = trainer.load_train_data()
         val_data = trainer.load_val_data()
+    elif config.train_smiles is not None:
+        train_data = read_smiles(config.train_smiles)
+        val_data = None
+        if config.val_smiles is not None:
+            val_data = read_smiles(config.val_smiles)
     else:
         data = MolGen(name = 'zinc', path = config.data_path)
         split = data.get_split(method = 'random', seed = config.data_seed, frac = [0.8, 0.0, 0.2])

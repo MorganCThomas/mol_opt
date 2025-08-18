@@ -11,7 +11,7 @@ import argparse
 from collections import deque
 import pickle
 
-from fast_jtnn import *
+from ..fast_jtnn import *
 import rdkit
 
 lg = rdkit.RDLogger.logger() 

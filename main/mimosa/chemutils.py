@@ -84,22 +84,21 @@ def jnk_gsk_fusion(jnk_score, gsk_score):
 import os
 path_here = os.path.dirname(os.path.realpath(__file__))
 
-def load_vocabulary():
-	datafile = os.path.join(path_here, "data/vocabulary.txt")
+def load_vocabulary(datafile=None):
 	with open(datafile, 'r') as fin:
 		lines = fin.readlines()
 	vocabulary = [line.split()[0] for line in lines]
 	return vocabulary 
 
-vocabulary = load_vocabulary()
+#vocabulary = load_vocabulary()
 bondtype_list = [rdkit.Chem.rdchem.BondType.SINGLE, rdkit.Chem.rdchem.BondType.DOUBLE]
 
 
-def ith_substructure_is_atom(i):
+def ith_substructure_is_atom(i, vocabulary):
     substructure = vocabulary[i]
     return True if len(substructure)==1 else False
 
-def word2idx(word):
+def word2idx(word, vocabulary):
     return vocabulary.index(word)
 
 
@@ -180,7 +179,7 @@ def smiles2word(smiles):
     return cliques_smiles + atom_not_in_rings_list 
 
 ## is_valid_smiles 
-def is_valid(smiles):
+def is_valid(smiles, vocabulary):
     try:
         word_lst = smiles2word(smiles)
     except:
@@ -209,8 +208,8 @@ def substr_num(smiles):
     return len(clique_lst)
 
 
-def smiles2substrs(smiles):
-    if not is_valid(smiles):
+def smiles2substrs(smiles, vocabulary):
+    if not is_valid(smiles, vocabulary):
         return None 
     mol = smiles2mol(smiles)
     if mol is None:
@@ -222,18 +221,18 @@ def smiles2substrs(smiles):
     for clique in clique_lst:
         clique_smiles = Chem.MolFragmentToSmiles(mol, clique, kekuleSmiles=True)
         # print("clique_smiles", clique_smiles)  ## C1=CC=CC=C1, C1=COCC1, C1=CC=CC=C1 
-        idx_lst.append(word2idx(clique_smiles))
+        idx_lst.append(word2idx(clique_smiles, vocabulary))
     atom_symbol_not_in_rings_list = [atom.GetSymbol() for atom in mol.GetAtoms() if not atom.IsInRing()]
     atom_idx_not_in_rings_list = [atom.GetIdx() for atom in mol.GetAtoms() if not atom.IsInRing()]
     # print(atom_idx_not_in_rings_list)  ## [0, 1, 2, 3, 11, 12, 13, 14, 21]  nonring atom's index in molecule
     for atom in atom_symbol_not_in_rings_list:
-        idx_lst.append(word2idx(atom))
+        idx_lst.append(word2idx(atom, vocabulary))
 
     return idx_lst 
 
 
 
-def smiles2graph(smiles):
+def smiles2graph(smiles, vocabulary):
     '''     N is # of substructures in the molecule 
 
     Output:
@@ -250,7 +249,7 @@ def smiles2graph(smiles):
     '''
 
     ### 0. smiles -> mol 
-    if not is_valid(smiles):
+    if not is_valid(smiles, vocabulary):
         return None 
     mol = smiles2mol(smiles)
     if mol is None:
@@ -263,13 +262,13 @@ def smiles2graph(smiles):
     for clique in clique_lst:
         clique_smiles = Chem.MolFragmentToSmiles(mol, clique, kekuleSmiles=True)
         # print("clique_smiles", clique_smiles)  ## C1=CC=CC=C1, C1=COCC1, C1=CC=CC=C1 
-        idx_lst.append(word2idx(clique_smiles))
+        idx_lst.append(word2idx(clique_smiles, vocabulary))
 
     atom_symbol_not_in_rings_list = [atom.GetSymbol() for atom in mol.GetAtoms() if not atom.IsInRing()]
     atom_idx_not_in_rings_list = [atom.GetIdx() for atom in mol.GetAtoms() if not atom.IsInRing()]
     # print(atom_idx_not_in_rings_list)  ## [0, 1, 2, 3, 11, 12, 13, 14, 21]  nonring atom's index in molecule
     for atom in atom_symbol_not_in_rings_list:
-        idx_lst.append(word2idx(atom))
+        idx_lst.append(word2idx(atom, vocabulary))
     # print(idx_lst) ## [3, 68, 3, 0, 0, 0, 0, 0, 0, 1, 2, 4]  
     d = len(vocabulary)
     N = len(idx_lst)
@@ -321,13 +320,13 @@ def smiles2graph(smiles):
     return idx_lst, node_mat, substructure_lst, atomidx_2substridx, adjacency_matrix, leaf_extend_idx_pair 
 
 
-def smiles2feature(smiles):
+def smiles2feature(smiles, vocabulary):
     """
         (1) molecule2tree
         (2) mask leaf node 
     """
     ### 0. smiles -> mol 
-    if not is_valid(smiles):
+    if not is_valid(smiles, vocabulary):
         return None 
     mol = smiles2mol(smiles)
     if mol is None:
@@ -340,13 +339,13 @@ def smiles2feature(smiles):
     for clique in clique_lst:
         clique_smiles = Chem.MolFragmentToSmiles(mol, clique, kekuleSmiles=True)
         # print("clique_smiles", clique_smiles)  ## C1=CC=CC=C1, C1=COCC1, C1=CC=CC=C1 
-        idx_lst.append(word2idx(clique_smiles))
+        idx_lst.append(word2idx(clique_smiles, vocabulary))
 
     atom_symbol_not_in_rings_list = [atom.GetSymbol() for atom in mol.GetAtoms() if not atom.IsInRing()]
     atom_idx_not_in_rings_list = [atom.GetIdx() for atom in mol.GetAtoms() if not atom.IsInRing()]
     # print(atom_idx_not_in_rings_list)  ## [0, 1, 2, 3, 11, 12, 13, 14, 21]  nonring atom's index in molecule
     for atom in atom_symbol_not_in_rings_list:
-        idx_lst.append(word2idx(atom))
+        idx_lst.append(word2idx(atom, vocabulary))
     # print(idx_lst) ## [3, 68, 3, 0, 0, 0, 0, 0, 0, 1, 2, 4]  
     d = len(vocabulary)
     N = len(idx_lst)
@@ -399,7 +398,7 @@ def smiles2feature(smiles):
 
 
 
-def smiles2expandfeature(smiles):
+def smiles2expandfeature(smiles, vocabulary):
     """
         (1) molecule2tree
         (2) mask leaf node 
@@ -418,13 +417,13 @@ def smiles2expandfeature(smiles):
     for clique in clique_lst:
         clique_smiles = Chem.MolFragmentToSmiles(mol, clique, kekuleSmiles=True)
         # print("clique_smiles", clique_smiles)  ## C1=CC=CC=C1, C1=COCC1, C1=CC=CC=C1 
-        idx_lst.append(word2idx(clique_smiles))
+        idx_lst.append(word2idx(clique_smiles, vocabulary))
 
     atom_symbol_not_in_rings_list = [atom.GetSymbol() for atom in mol.GetAtoms() if not atom.IsInRing()]
     atom_idx_not_in_rings_list = [atom.GetIdx() for atom in mol.GetAtoms() if not atom.IsInRing()]
     # print(atom_idx_not_in_rings_list)  ## [0, 1, 2, 3, 11, 12, 13, 14, 21]  nonring atom's index in molecule
     for atom in atom_symbol_not_in_rings_list:
-        idx_lst.append(word2idx(atom))
+        idx_lst.append(word2idx(atom, vocabulary))
     # print(idx_lst) ## [3, 68, 3, 0, 0, 0, 0, 0, 0, 1, 2, 4]  
     d = len(vocabulary)
     N = len(idx_lst)
@@ -730,7 +729,7 @@ def delete_substructure_at_idx(editmol, atom_idx_lst):
 
 
 def differentiable_graph2smiles_lgp(origin_smiles, differentiable_graph, 
-                                leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                 max_num_offspring = 100, topk = 3):
     '''
         origin_smiles:
@@ -756,7 +755,7 @@ def differentiable_graph2smiles_lgp(origin_smiles, differentiable_graph,
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -772,7 +771,7 @@ def differentiable_graph2smiles_lgp(origin_smiles, differentiable_graph,
             for substructure_idx in added_substructure_lst:
                 new_substructure = vocabulary[substructure_idx]
                 for new_bond in bondtype_list:
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -788,7 +787,7 @@ def differentiable_graph2smiles_lgp(origin_smiles, differentiable_graph,
 
 
 def differentiable_graph2smiles_v0(origin_smiles, differentiable_graph, 
-                                leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                 max_num_offspring = 100, topk = 3):
     '''
         origin_smiles:
@@ -814,7 +813,7 @@ def differentiable_graph2smiles_v0(origin_smiles, differentiable_graph,
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -864,7 +863,7 @@ def differentiable_graph2smiles_v0(origin_smiles, differentiable_graph,
             for new_bond in bondtype_list:
                 for leaf_atom_idx in neighbor_atom_idx_lst:
                     new_leaf_atom_idx = old_idx2new_idx[leaf_atom_idx] 
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = delete_mol, position_idx = new_leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -889,7 +888,7 @@ def differentiable_graph2smiles_v0(origin_smiles, differentiable_graph,
             for substructure_idx in added_substructure_lst:
                 new_substructure = vocabulary[substructure_idx]
                 for new_bond in bondtype_list:
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -906,7 +905,7 @@ def differentiable_graph2smiles_v0(origin_smiles, differentiable_graph,
 
 
 def differentiable_graph2smiles(origin_smiles, differentiable_graph, 
-                                leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                 max_num_offspring = 100, topk = 3):
     '''
         origin_smiles:
@@ -939,7 +938,7 @@ def differentiable_graph2smiles(origin_smiles, differentiable_graph,
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -994,7 +993,7 @@ def differentiable_graph2smiles(origin_smiles, differentiable_graph,
             for new_bond in bondtype_list:
                 for leaf_atom_idx in neighbor_atom_idx_lst:
                     new_leaf_atom_idx = old_idx2new_idx[leaf_atom_idx] 
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = delete_mol, position_idx = new_leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -1021,7 +1020,7 @@ def differentiable_graph2smiles(origin_smiles, differentiable_graph,
             for substructure_idx in added_substructure_lst:
                 new_substructure = vocabulary[substructure_idx]
                 for new_bond in bondtype_list:
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -1036,7 +1035,7 @@ def differentiable_graph2smiles(origin_smiles, differentiable_graph,
 
 
 def differentiable_graph2smiles_sample(origin_smiles, differentiable_graph, 
-                                leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                 topk, epsilon):
     '''
         origin_smiles:
@@ -1069,7 +1068,7 @@ def differentiable_graph2smiles_sample(origin_smiles, differentiable_graph,
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -1129,7 +1128,7 @@ def differentiable_graph2smiles_sample(origin_smiles, differentiable_graph,
             for new_bond in bondtype_list:
                 for leaf_atom_idx in neighbor_atom_idx_lst:
                     new_leaf_atom_idx = old_idx2new_idx[leaf_atom_idx] 
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = delete_mol, position_idx = new_leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -1161,7 +1160,7 @@ def differentiable_graph2smiles_sample(origin_smiles, differentiable_graph,
             for substructure_idx in added_substructure_lst:
                 new_substructure = vocabulary[substructure_idx]
                 for new_bond in bondtype_list:
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -1175,7 +1174,7 @@ def differentiable_graph2smiles_sample(origin_smiles, differentiable_graph,
 
 
 def differentiable_graph2smiles_sample_v2(origin_smiles, differentiable_graph, 
-                                leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                 topk, epsilon):
     '''
         origin_smiles:
@@ -1207,7 +1206,7 @@ def differentiable_graph2smiles_sample_v2(origin_smiles, differentiable_graph,
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph  #### both are np.array 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -1275,7 +1274,7 @@ def differentiable_graph2smiles_sample_v2(origin_smiles, differentiable_graph,
             for new_bond in bondtype_list:
                 for leaf_atom_idx in neighbor_atom_idx_lst:
                     new_leaf_atom_idx = old_idx2new_idx[leaf_atom_idx] 
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = delete_mol, position_idx = new_leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -1313,7 +1312,7 @@ def differentiable_graph2smiles_sample_v2(origin_smiles, differentiable_graph,
             for substructure_idx in added_substructure_lst:
                 new_substructure = vocabulary[substructure_idx]
                 for new_bond in bondtype_list:
-                    if ith_substructure_is_atom(substructure_idx):
+                    if ith_substructure_is_atom(substructure_idx, vocabulary):
                         new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                         new_smiles_set.add(new_smiles)
@@ -1326,7 +1325,7 @@ def differentiable_graph2smiles_sample_v2(origin_smiles, differentiable_graph,
 
 
 def differentiable_graph_to_smiles_purely_randomwalk(origin_smiles, differentiable_graph, 
-                                             leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                             leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                              topk = 3, epsilon = 0.7,):
     # print(origin_smiles)
     leaf2nonleaf = {leaf:nonleaf for leaf,nonleaf in leaf_nonleaf_lst}
@@ -1335,7 +1334,7 @@ def differentiable_graph_to_smiles_purely_randomwalk(origin_smiles, differentiab
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -1405,7 +1404,7 @@ def differentiable_graph_to_smiles_purely_randomwalk(origin_smiles, differentiab
                 for new_bond in bondtype_list:
                     for leaf_atom_idx in neighbor_atom_idx_lst:
                         new_leaf_atom_idx = old_idx2new_idx[leaf_atom_idx] 
-                        if ith_substructure_is_atom(substructure_idx):
+                        if ith_substructure_is_atom(substructure_idx, vocabulary):
                             new_smiles = add_atom_at_position(editmol = delete_mol, position_idx = new_leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                             new_smiles_set.add(new_smiles)
@@ -1425,7 +1424,7 @@ def differentiable_graph_to_smiles_purely_randomwalk(origin_smiles, differentiab
                 for substructure_idx in added_substructure_lst:
                     new_substructure = vocabulary[substructure_idx]
                     for new_bond in bondtype_list:
-                        if ith_substructure_is_atom(substructure_idx):
+                        if ith_substructure_is_atom(substructure_idx, vocabulary):
                             new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                           new_atom = new_substructure, new_bond = new_bond)
                             new_smiles_set.add(new_smiles)
@@ -1440,7 +1439,7 @@ def differentiable_graph_to_smiles_purely_randomwalk(origin_smiles, differentiab
 
 
 def differentiable_graph2smiles_plus_random(origin_smiles, differentiable_graph, 
-                                             leaf_extend_idx_pair, leaf_nonleaf_lst, 
+                                             leaf_extend_idx_pair, leaf_nonleaf_lst, vocabulary,
                                              max_num_offspring = 100, topk = 3, epsilon = 0.7,
                                              random_topology = False, random_substr = False):
     '''
@@ -1474,7 +1473,7 @@ def differentiable_graph2smiles_plus_random(origin_smiles, differentiable_graph,
     #### 1. data preparation 
     origin_mol = Chem.rdchem.RWMol(Chem.MolFromSmiles(origin_smiles))
     origin_idx_lst, origin_node_mat, origin_substructure_lst, \
-    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles)
+    origin_atomidx_2substridx, origin_adjacency_matrix, leaf_extend_idx_pair = smiles2graph(origin_smiles, vocabulary)
     node_indicator, adjacency_weight = differentiable_graph 
     N = len(origin_idx_lst)
     M = len(leaf_extend_idx_pair) 
@@ -1561,7 +1560,7 @@ def differentiable_graph2smiles_plus_random(origin_smiles, differentiable_graph,
                     for new_bond in bondtype_list:
                         for leaf_atom_idx in neighbor_atom_idx_lst:
                             new_leaf_atom_idx = old_idx2new_idx[leaf_atom_idx] 
-                            if ith_substructure_is_atom(substructure_idx):
+                            if ith_substructure_is_atom(substructure_idx, vocabulary):
                                 new_smiles = add_atom_at_position(editmol = delete_mol, position_idx = new_leaf_atom_idx, 
                                                                   new_atom = new_substructure, new_bond = new_bond)
                                 new_smiles_set.add(new_smiles)
@@ -1587,7 +1586,7 @@ def differentiable_graph2smiles_plus_random(origin_smiles, differentiable_graph,
                     for substructure_idx in added_substructure_lst:
                         new_substructure = vocabulary[substructure_idx]
                         for new_bond in bondtype_list:
-                            if ith_substructure_is_atom(substructure_idx):
+                            if ith_substructure_is_atom(substructure_idx, vocabulary):
                                 new_smiles = add_atom_at_position(editmol = origin_mol, position_idx = leaf_atom_idx, 
                                                                   new_atom = new_substructure, new_bond = new_bond)
                                 new_smiles_set.add(new_smiles)

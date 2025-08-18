@@ -4,6 +4,8 @@ import re
 import numpy as np
 import pandas as pd
 import torch
+import os
+import gzip
 
 
 def add_common_arg(parser):
@@ -49,6 +51,10 @@ def add_train_args(parser):
     common_arg.add_argument('--processed_data',
                             action='store_true', default=False, 
                             help='Input processed data for JTVAE')
+    common_arg.add_argument('--train_smiles', type=str, default=None,
+                        help='Path to the training SMILES file')
+    common_arg.add_argument('--val_smiles', type=str, default=None,
+                        help='Path to the validation SMILES file')
     common_arg.add_argument('--data_path',
                             type=str, default='./data',
                             help='Input data of TDC moses file')
@@ -121,3 +127,28 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
+def read_smiles(file_path):
+    """Read a smiles file separated by \n"""
+    if any(["gz" in ext for ext in os.path.basename(file_path).split(".")[1:]]):
+        with gzip.open(file_path) as f:
+            smiles = f.read().splitlines()
+            smiles = [smi.decode("utf-8") for smi in smiles]
+    else:
+        with open(file_path, "rt") as f:
+            smiles = f.read().splitlines()
+    return smiles
+
+
+def write_smiles(smiles, file_path):
+    """Save smiles to a file path seperated by \n"""
+    if (not os.path.exists(os.path.dirname(file_path))) and (
+        os.path.dirname(file_path) != ""
+    ):
+        os.makedirs(os.path.dirname(file_path))
+    if any(["gz" in ext for ext in os.path.basename(file_path).split(".")[1:]]):
+        with gzip.open(file_path, "wb") as f:
+            _ = [f.write((smi + "\n").encode("utf-8")) for smi in smiles]
+    else:
+        with open(file_path, "wt") as f:
+            _ = [f.write(smi + "\n") for smi in smiles]
+    return

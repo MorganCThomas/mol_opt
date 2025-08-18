@@ -7,10 +7,10 @@ import torch.optim.lr_scheduler as lr_scheduler
 from tqdm.auto import tqdm
 import numpy as np
 
-from models.trainer import Trainer
-from models.jtvae.mol_tree import MolTree
-from utils.jtvae_data_utils import MolTreeFolder
-from utils.vocab import Vocab
+from ..trainer import Trainer
+from .mol_tree import MolTree
+from ...utils.jtvae_data_utils import MolTreeFolder
+from ...utils.vocab import Vocab
 
 
 class JTVAETrainer(Trainer):

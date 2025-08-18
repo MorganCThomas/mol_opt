@@ -3,9 +3,9 @@ import torch.optim as optim
 from tqdm.auto import tqdm
 
 from torch.nn.utils import clip_grad_norm_
-from models.trainer import Trainer
-from models.smiles_vae.misc import CosineAnnealingLRWithRestart, KLAnnealer
-from utils.smiles_data_utils import OneHotVocab, Logger, CircularBuffer
+from ..trainer import Trainer
+from .misc import CosineAnnealingLRWithRestart, KLAnnealer
+from ...utils.smiles_data_utils import OneHotVocab, Logger, CircularBuffer
 
 
 class VAETrainer(Trainer):

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+import os
 import torch
 from torch.utils.data import DataLoader
 import pickle
@@ -15,13 +17,13 @@ from tdc.chem_utils import MolConvert
 converter = MolConvert(src = 'SELFIES', dst = 'SMILES',)
 # selfies_lst = converter(smiles_lst)
 
-def pretrain(restore_from=None):
+def pretrain(voc_file, selfies_file, output_dir, output_name, restore_from=None):
     """Trains the Prior RNN"""
 
     # Read vocabulary from a file
-    voc = Vocabulary(init_from_file="data/Voc")
+    voc = Vocabulary(init_from_file=voc_file)
     print('# Create a Dataset from a SELFIES file')
-    moldata = MolData("data/zinc.selfies", voc)
+    moldata = MolData(selfies_file, voc)
 
 
     data = DataLoader(moldata, batch_size=128, shuffle=True, drop_last=True,
@@ -71,10 +73,29 @@ def pretrain(restore_from=None):
                         tqdm.write(smile)
                 tqdm.write("\n{:>4.1f}% valid SELFIES".format(100 * valid / len(seqs)))
                 tqdm.write("*" * 50 + "\n")
-                torch.save(Prior.rnn.state_dict(), "data/Prior.ckpt")
+                output_path = os.path.join(output_dir, f"{output_name}.ckpt")
+                torch.save(Prior.rnn.state_dict(), output_path)
 
         # Save the Prior
-        torch.save(Prior.rnn.state_dict(), "data/Prior.ckpt")
+        output_path = os.path.join(output_dir, f"{output_name}.ckpt")
+        torch.save(Prior.rnn.state_dict(), output_path)
 
 if __name__ == "__main__":
-    pretrain()
+    parser = argparse.ArgumentParser(description='Pretrain RNN for molecular generation using SELFIES')
+    parser.add_argument('--voc_file', type=str, default='data/Voc',
+                        help='Path to vocabulary file (default: data/Voc)')
+    parser.add_argument('--selfies_file', type=str, default='data/zinc.selfies',
+                        help='Path to SELFIES file for training (default: data/zinc.selfies)')
+    parser.add_argument('--output_dir', type=str, default='data',
+                        help='Output directory for saving model (default: data)')
+    parser.add_argument('--output_name', type=str, default='Prior',
+                        help='Output model name (default: Prior)')
+    parser.add_argument('--restore_from', type=str, default=None,
+                        help='Path to checkpoint to restore from (optional)')
+    
+    args = parser.parse_args()
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+    
+    pretrain(args.voc_file, args.selfies_file, args.output_dir, args.output_name, args.restore_from)

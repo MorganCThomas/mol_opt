@@ -6,7 +6,7 @@ import math, random, sys
 from optparse import OptionParser
 import pickle 
 
-from fast_jtnn import *
+from ..fast_jtnn import *
 import rdkit
 
 def tensorize(smiles, assm=True):

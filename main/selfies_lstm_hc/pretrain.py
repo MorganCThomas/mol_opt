@@ -1,9 +1,13 @@
 import argparse
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from guacamol.utils.helpers import setup_default_logger
 
 from .smiles_rnn_distribution_learner import SmilesRnnDistributionLearner
+from .rnn_utils import load_smiles_from_file
+
 
 if __name__ == '__main__':
     setup_default_logger()
@@ -44,13 +48,15 @@ if __name__ == '__main__':
     training_set_file = args.train_data
     validation_set_file = args.valid_data
 
-    with open(training_set_file) as f:
-        train_list = f.readlines()
+    #with open(training_set_file) as f:
+    #    train_list = f.readlines()
+    train_list, _ = load_smiles_from_file(training_set_file, max_len=args.max_len)
 
-    with open(validation_set_file) as f:
-        valid_list = f.readlines()
+    #with open(validation_set_file) as f:
+    #    valid_list = f.readlines()
+    valid_list, _ = load_smiles_from_file(validation_set_file, max_len=args.max_len)
 
-    trainer.train(training_set=train_list, validation_set=valid_list)
+    trainer.train(train_seqs=train_list, valid_seqs=valid_list)
 
     print(f'All done, your trained model is in {args.output_dir}')
 

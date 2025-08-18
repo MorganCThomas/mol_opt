@@ -8,13 +8,16 @@ import sys
 import torch
 import rdkit
 import sys 
-sys.path.append('.')
+path_here = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, path_here) # MAKE sure to seach here first
 
 
-from selfies_vae.utils.script_utils import add_train_args, set_seed
-from models.models_storage import ModelsStorage
+from .utils.script_utils import add_train_args, set_seed, read_smiles
+from .models.models_storage import ModelsStorage
 from tdc.generation import MolGen
-from models.selfies_vae import VAE, VAETrainer, vae_parser
+from .models.selfies_vae.model import VAE
+from .models.selfies_vae.trainer import VAETrainer
+from .models.selfies_vae.config import get_parser as vae_parser
 from tdc.chem_utils import MolConvert
 converter = MolConvert(src = 'SMILES', dst = 'SELFIES')
 
@@ -63,6 +66,13 @@ def main(model, config):
     if config.processed_data:
         train_data = trainer.load_train_data()
         val_data = trainer.load_val_data()
+    elif config.train_smiles:
+        train_smiles = read_smiles(config.train_smiles)
+        train_data = converter(train_smiles)
+        val_data = None
+        if config.val_smiles is None:
+            val_smiles = read_smiles(config.train_smiles)
+            val_data = converter(val_smiles)
     else:
         data = MolGen(name = 'zinc', path = config.data_path)
         split = data.get_split(method = 'random', seed = config.data_seed, frac = [0.8, 0.0, 0.2])

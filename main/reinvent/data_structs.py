@@ -8,7 +8,7 @@ import time
 import torch
 from torch.utils.data import Dataset
 
-from .utils import Variable
+from utils import Variable
 
 class Vocabulary(object):
     """A class for handling encoding/decoding from SMILES to an array of indices"""
@@ -26,7 +26,10 @@ class Vocabulary(object):
         """Takes a list of characters (eg '[NH]') and encodes to array of indices"""
         smiles_matrix = np.zeros(len(char_list), dtype=np.float32)
         for i, char in enumerate(char_list):
-            smiles_matrix[i] = self.vocab[char]
+            try:
+                smiles_matrix[i] = self.vocab[char]
+            except KeyError:
+                raise KeyError("Character {} from {} not in vocabulary.".format(char, char_list))
         return smiles_matrix
 
     def decode(self, matrix):
