@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import torch
 # torch.backends.cudnn.enabled = True
 # torch.backends.cudnn.benchmark = True
@@ -21,17 +22,20 @@ os.environ["CUDA_VISIBLE_DEVICES"]='0'
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # data = MolGen(name = 'ZINC')
 # data = MolGen(name = 'ChEMBL')
-def pretrain(restore_from=None):
+def pretrain(voc_file, smiles_file, output_dir, output_name, restore_from=None):
     """Trains the Prior transformer"""
 
     # Read vocabulary from a file
-    voc = Vocabulary(init_from_file="data/Voc")
+    voc = Vocabulary(init_from_file=voc_file)
 
-    data1 = MolGen(name='ZINC')
-    data2= MolGen(name='ChEMBL')
-    data1=list(data1.smiles_lst.values)
-    data2=[]
-    data_all=data1+data2
+    # Read SMILES from file instead of using MolGen
+    print(f"Reading SMILES from: {smiles_file}")
+    with open(smiles_file, 'r') as f:
+        data_all = [line.strip() for line in f if line.strip()]
+    
+    print(f"Loaded {len(data_all)} SMILES from file")
+    
+    # Filter out unwanted SMILES (same filtering logic as original)
     shape_arr = []
     out_list=['i','I','.','P','[Se]','[2H]','B','9','[N@+]','[3H]','[C-]','[O]','[18F]']
     for inter in data_all:
@@ -52,7 +56,6 @@ def pretrain(restore_from=None):
                     aaa = 1
                 elif a3:
                     aaaa=1
-
                 else:
                     shape_arr.append(inter)
 
@@ -65,7 +68,7 @@ def pretrain(restore_from=None):
     print('build DataLoader')
 
     Prior = Transformer_(voc,device)
-    toLoad=True
+    toLoad=False
     
     # Can restore from a saved RNN
     if restore_from:
@@ -78,7 +81,7 @@ def pretrain(restore_from=None):
     print("build Transformer")
     optimizer = torch.optim.Adam(Prior.transformer.parameters(), lr = 0.001)
     print("begin to learn")
-    for epoch in range(68,300):
+    for epoch in range(1, 6):
         # When training on a few million compounds, this model converges
         # in a few of epochs or even faster. If model sized is increased
         # its probably a good idea to check loss against an external set of
@@ -119,7 +122,25 @@ def pretrain(restore_from=None):
             #torch.cuda.empty_cache()
 
         # Save the Prior
-        torch.save(Prior.transformer.state_dict(), f"data/Prior_transformer-epoch{epoch}-valid-{100 * valid / len(seqs)}.ckpt")
+        output_path = os.path.join(output_dir, f"{output_name}_transformer-epoch{epoch}-valid-{100 * valid / len(seqs)}.ckpt")
+        torch.save(Prior.transformer.state_dict(), output_path)
 
 if __name__ == "__main__":
-    pretrain()
+    parser = argparse.ArgumentParser(description='Pretrain Transformer for molecular generation')
+    parser.add_argument('--voc_file', type=str, default='data/Voc',
+                        help='Path to vocabulary file (default: data/Voc)')
+    parser.add_argument('--smiles_file', type=str, default='data/mols_filtered.smi',
+                        help='Path to SMILES file for training (default: data/mols_filtered.smi)')
+    parser.add_argument('--output_dir', type=str, default='data',
+                        help='Output directory for saving model (default: data)')
+    parser.add_argument('--output_name', type=str, default='Prior',
+                        help='Output model name (default: Prior)')
+    parser.add_argument('--restore_from', type=str, default=None,
+                        help='Path to checkpoint to restore from (optional)')
+    
+    args = parser.parse_args()
+    
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+    
+    pretrain(args.voc_file, args.smiles_file, args.output_dir, args.output_name, args.restore_from)
