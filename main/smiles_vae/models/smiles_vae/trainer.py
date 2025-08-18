@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 from torch.nn.utils import clip_grad_norm_
 from ..trainer import Trainer
 from .misc import CosineAnnealingLRWithRestart, KLAnnealer
-from ...utils.smiles_data_utils import OneHotVocab, Logger, CircularBuffer
+from utils.smiles_data_utils import OneHotVocab, Logger, CircularBuffer
 
 
 class VAETrainer(Trainer):
