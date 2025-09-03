@@ -1,4 +1,4 @@
-name: molscore_molopt
+name: msb_molopt
 channels:
   - conda-forge
   - defaults
