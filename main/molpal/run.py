@@ -12,6 +12,9 @@ import os
 import ray 
 import signal
 import sys
+import gc
+import torch
+torch.cuda.set_per_process_memory_fraction(0.6)  # Limit to 80% of GPU memory
 
 from ..optimizer import BaseOptimizer
 from .molpal import args as molpal_args
@@ -44,18 +47,37 @@ class MolPAL_Optimizer(BaseOptimizer):
         params = vars(molpal_args.gen_args())
         for kw in config.keys():
             params[kw] = config[kw]
+            
+        # Force garbage collection before starting
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         try:
             if 'redis_password' in os.environ:
                 ray.init(
                     address=os.environ["ip_head"],
-                    _redis_password=os.environ['redis_password']
+                    _redis_password=os.environ['redis_password'],
+                    object_store_memory=2e9,  # set to 2GB
+                #    _system_config={
+                #"actor_restart_max_retries": 0,
+                #}
                 )
             else:
-                ray.init()
+                ray.init(
+                    object_store_memory=2e9, # set to 2GB
+                 #        _system_config={
+                #"actor_restart_max_retries": 0,
+                #}
+                )
                 # ray.init(address='auto')
         except ConnectionError:
-            ray.init()
+            ray.init(
+                object_store_memory=2e9,
+                #_system_config={
+                #"actor_restart_max_retries": 0,
+                #}
+                ) # set to 2GB
         except PermissionError:
             print('Failed to create a temporary directory for ray')
             raise

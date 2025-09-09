@@ -4,8 +4,8 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from main.molpal.molpal.models.mpnn.model import MoleculeModel
-from main.molpal.molpal.models.chemprop.data import (
+from .model import MoleculeModel
+from ..chemprop.data import (
     StandardScaler,
     MoleculeDataLoader,
     MoleculeDataset,

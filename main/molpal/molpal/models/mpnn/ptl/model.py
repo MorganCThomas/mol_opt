@@ -6,8 +6,8 @@ import torch
 from torch.optim import Adam
 from torch.nn import functional as F
 
-from main.molpal.molpal.models import mpnn
-from main.molpal.molpal.models.chemprop.nn_utils import NoamLR
+from ... import mpnn
+from ...chemprop.nn_utils import NoamLR
 
 logging.getLogger("lightning").setLevel(logging.FATAL)
 

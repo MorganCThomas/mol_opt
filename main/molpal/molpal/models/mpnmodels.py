@@ -11,19 +11,28 @@ import numpy as np
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import ray
-from ray.util.sgd.v2 import Trainer
+try:
+    from ray.train import Trainer
+    from ray.train.torch import TorchTrainer
+    RAY_TRAIN_AVAILABLE = True
+except ImportError:
+    # Ray Train not available, disable distributed training
+    Trainer = None
+    TorchTrainer = None
+    RAY_TRAIN_AVAILABLE = False
+    warnings.warn("Ray Train not available. Distributed training will be disabled.", UserWarning)
 import torch
 from tqdm import tqdm
 
-from main.molpal.molpal.models.chemprop.data.data import (
+from .chemprop.data.data import (
     MoleculeDatapoint, MoleculeDataset, MoleculeDataLoader
 )
-from main.molpal.molpal.models.chemprop.data.scaler import StandardScaler
-from main.molpal.molpal.models.chemprop.data.utils import split_data
+from .chemprop.data.scaler import StandardScaler
+from .chemprop.data.utils import split_data
 
-from main.molpal.molpal.models.base import Model
-from main.molpal.molpal.models import mpnn
-from main.molpal.molpal.utils import batches
+from .base import Model
+from . import mpnn
+from ..utils import batches
 
 logging.getLogger('lightning').setLevel(logging.FATAL)
 warnings.filterwarnings(
@@ -93,7 +102,13 @@ class MPNN:
                  ddp: bool = False, precision: int = 32,
                  model_seed: Optional[int] = None):
         self.ncpu = ncpu
+        
+        # Disable DDP if Ray Train API is not available
+        if ddp and TorchTrainer is None and Trainer is None:
+            print("Warning: Ray distributed training not available. Disabling DDP.")
+            ddp = False
         self.ddp = ddp
+        
         if precision not in (16, 32):
             raise ValueError(
                 f'arg: "precision" can only be (16, 32). got: {precision}'
@@ -153,12 +168,32 @@ class MPNN:
             self.train_config['train_data'] = train_data
             self.train_config['val_data'] = val_data
 
-            trainer = Trainer("torch", self.num_workers, self.use_gpu, {"CPU": self.ncpu})
-            trainer.start()
-            results = trainer.run(mpnn.sgd.train_func, self.train_config)
-            trainer.shutdown()
-
-            self.model = results[0]
+            # Handle different Ray versions
+            if TorchTrainer is not None:
+                # Use new Ray Train API
+                from ray.train import ScalingConfig
+                scaling_config = ScalingConfig(
+                    num_workers=self.num_workers,
+                    use_gpu=self.use_gpu,
+                    resources_per_worker={"CPU": self.ncpu}
+                )
+                trainer = TorchTrainer(
+                    train_loop_per_worker=mpnn.sgd.train_func,
+                    train_loop_config=self.train_config,
+                    scaling_config=scaling_config
+                )
+                results = trainer.fit()
+                self.model = results.metrics[0]
+            elif Trainer is not None:
+                # Use deprecated Ray SGD (fallback)
+                trainer = Trainer("torch", self.num_workers, self.use_gpu, {"CPU": self.ncpu})
+                trainer.start()
+                results = trainer.run(mpnn.sgd.train_func, self.train_config)
+                trainer.shutdown()
+                self.model = results[0]
+            else:
+                # No distributed training available
+                raise RuntimeError("Ray distributed training not available. Please disable ddp or update Ray version.")
             
             return True
 

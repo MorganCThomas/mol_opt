@@ -1,6 +1,13 @@
 from typing import Dict, Tuple
 
-import ray.util.sgd.v2 as sgd
+try:
+    import ray.train as train
+    RAY_TRAIN_AVAILABLE = True
+except ImportError:
+    # Fallback for environments without Ray Train
+    train = None
+    RAY_TRAIN_AVAILABLE = False
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -10,9 +17,9 @@ from torch.optim.lr_scheduler import _LRScheduler
 from torch.utils.data import DataLoader, DistributedSampler
 from tqdm import trange
 
-from main.molpal.molpal.models import mpnn
-from main.molpal.molpal.models.chemprop.data.data import construct_molecule_batch
-from main.molpal.molpal.models.chemprop.nn_utils import NoamLR
+from .. import mpnn
+from ..chemprop.data.data import construct_molecule_batch
+from ..chemprop.nn_utils import NoamLR
 
 
 def train_epoch(
@@ -166,15 +173,24 @@ def train_func(config: Dict):
     final_lr = config.get("final_lr", 1e-4)
     ncpu = config.get("ncpu", 1)
 
+    # Get local rank for distributed training
+    if RAY_TRAIN_AVAILABLE and train:
+        try:
+            local_rank = train.get_context().get_local_rank()
+        except:
+            local_rank = 0
+    else:
+        local_rank = 0
+        
     device = torch.device(
-        f"cuda:{sgd.local_rank()}" if torch.cuda.is_available() else "cpu"
+        f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu"
     )
     if torch.cuda.is_available():
         torch.cuda.set_device(device)
 
     model = model.to(device)
     model = DistributedDataParallel(
-        model, device_ids=[sgd.local_rank()] if torch.cuda.is_available() else None
+        model, device_ids=[local_rank] if torch.cuda.is_available() else None
     )
 
     # print(list(model.parameters())[1])
