@@ -1,8 +1,8 @@
 {
-  "train_smiles": "../../data/zinc.txt",
-  "output_directory": "/home/morgan/phd/mol_opt/main/smiles_lstm_ahc/pretrained_model",
-  "suffix": null,
-  "randomize": false,
+  "train_smiles": "/home/morgan/MolScore_baselines/datasets/molexp/chembl34.smi.gz",
+  "output_directory": "/shared/morgan/MolScore_baselines/algorithms/mol_opt/main/smiles_ahc/pretrain_model",
+  "suffix": "chembl34",
+  "randomize": true,
   "valid_smiles": null,
   "test_smiles": null,
   "validate_frequency": 500,
@@ -16,6 +16,6 @@
   "dropout": 0.0,
   "learning_rate": 0.001,
   "layer_normalization": false,
-  "total_time_mins": 8.409577763080597,
-  "epoch_time_mins": 1.6819155526161194
+  "total_time_mins": 603.4297531525294,
+  "epoch_time_mins": 120.68595063050589
 }

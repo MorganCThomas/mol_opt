@@ -1,0 +1,3 @@
+Pretrain using train_prior.py, for example,
+
+python train_prior.py --train_smiles ~/MolScore_baselines/datasets/molexp/chembl34.smi.gz -o prior -s ChEMBL34

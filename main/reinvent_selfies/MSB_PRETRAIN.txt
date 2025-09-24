@@ -1,0 +1,7 @@
+Here we use preprocess_smiles2selfies.py:
+
+python preprocess_smiles2selfies.py --input_smiles ~/MolScore_baselines/datasets/molexp/chembl34.smi --output_dir data/chembl34
+
+Now we pretrain the model:
+
+python pretrain.py --voc_file data/chembl34/Voc --selfies_file data/chembl34/molecules.selfies --output_dir data/chembl34/

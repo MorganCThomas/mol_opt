@@ -1,0 +1,12 @@
+First, we need to create a vocabulary using data_structs.py
+
+python data_structs.py ~/MolScore_baselines/datasets/molexp/chembl34.smi
+
+Then we need to organise the files generated
+
+mv data/Voc data/chembl34_Voc
+mv data/mols_filtered data/chembl34_mols_filtered
+
+Then we do pretraining, here we need to !!edit the pretrain.py file directly!! To change input Voc and output files
+
+python pretrain.py ~/MolScore_baselines/datasets/molexp/chembl34.smi

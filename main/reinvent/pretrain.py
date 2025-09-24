@@ -18,7 +18,7 @@ def pretrain(restore_from=None):
     """Trains the Prior RNN"""
 
     # Read vocabulary from a file
-    voc = Vocabulary(init_from_file="data/GuacaMol_Voc")
+    voc = Vocabulary(init_from_file="data/chembl34_Voc")
 
 
     print('# Create a Dataset from a SMILES file')
@@ -69,10 +69,10 @@ def pretrain(restore_from=None):
                         tqdm.write(smile)
                 tqdm.write("\n{:>4.1f}% valid SMILES".format(100 * valid / len(seqs)))
                 tqdm.write("*" * 50 + "\n")
-                torch.save(Prior.rnn.state_dict(), "data/GuacaMol.ckpt")
+                torch.save(Prior.rnn.state_dict(), "data/chembl34.ckpt")
 
         # Save the Prior
-        torch.save(Prior.rnn.state_dict(), "data/GuacaMol.ckpt")
+        torch.save(Prior.rnn.state_dict(), "data/chembl34.ckpt")
 
 if __name__ == "__main__":
     pretrain()

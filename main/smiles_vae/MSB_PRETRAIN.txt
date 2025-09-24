@@ -1,0 +1,3 @@
+Run as a module from main like so:
+
+python -m smiles_vae.train smiles_vae --train_smiles ~/MolScore_baselines/datasets/molexp/chembl34.smi.gz --device cuda:0 --checkpoint_dir smiles_vae/checkpoint_chembl34/

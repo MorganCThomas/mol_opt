@@ -1,0 +1,3 @@
+Pretraining can be conducted by running the train_prior.py script as follows.
+
+python train_prior.py --train_smiles ~/MolScore_baselines/datasets/molexp/chembl34.smi.gz -o pretrained_model -s chembl34 --randomize

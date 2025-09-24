@@ -1,0 +1,21 @@
+{
+  "train_smiles": "../../../../datasets/molexp/chembl34.smi.gz",
+  "output_directory": "/shared/morgan/MolScore_baselines/algorithms/mol_opt/main/smiles_aug_mem/prior",
+  "suffix": "ChEMBL34",
+  "n_jobs": 1,
+  "valid_smiles": null,
+  "test_smiles": null,
+  "validate_frequency": 500,
+  "n_epochs": 5,
+  "batch_size": 128,
+  "device": "gpu",
+  "layer_size": 512,
+  "num_layers": 3,
+  "cell_type": "gru",
+  "embedding_layer_size": 256,
+  "dropout": 0.0,
+  "learning_rate": 0.001,
+  "layer_normalization": false,
+  "total_time_mins": 54.85121667782466,
+  "epoch_time_mins": 10.970243335564932
+}

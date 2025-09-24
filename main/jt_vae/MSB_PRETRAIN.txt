@@ -1,0 +1,29 @@
+As detailed in README.md, we first we need to create a vocab:
+
+python -m fast_jtnn.mol_tree < ~/MolScore_baselines/datasets/molexp/chembl34.smi
+
+Then let's move that for organisation:
+
+mv vocab.pkl data/chembl34/
+
+We need to unpickle it e.g., in python:
+
+import pickle as pkl
+with open('data/chembl34/vocab.pkl', 'rb') as f:
+  vocab = pkl.load(f)
+with open('data/chembl34/vocab.txt', 'wt') as f:
+  for element in vocab:
+    f.write(element + '\n')
+
+Next we run preprocess from 'main':
+
+python -m jt_vae.fast_molvae.preprocess -t ~/MolScore_baselines/datasets/molexp/chembl34.smi --split 100 --jobs 8
+
+Then organise a bit:
+
+mkdir jt_vae/data/chembl34-processed
+mv tensor* jt_vae/data/chembl34-processed
+
+Now for training:
+
+python -m jt_vae.fast_molvae.vae_train --train jt_vae/data/chembl34-processed/ --vocab jt_vae/data/chembl34/vocab.txt --save_dir jt_vae/checkpoints/chembl34/

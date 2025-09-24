@@ -1,0 +1,5 @@
+Run as module from main like so:
+
+python -m main.smiles_lstm_hc.train_smiles_lstm_model
+
+In practice we can use the same model as GuacaMol_SMILES_LSTM
